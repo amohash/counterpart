@@ -20,3 +20,15 @@ absolute bank balance); 100% churn resets customers to newCustomersPerMonth
 each month (steady state, not zero) — tested as decline vs 0% churn baseline.
 Gotchas: none.
 Next: Phase 3
+
+## Phase 3 — DONE (2026-08-27)
+Files created/changed: src/App.tsx (rewritten), src/hooks/useModelState.ts,
+src/components/{AssumptionsPanel,ProjectionTable,MrrChart,Headline}.tsx;
+package.json (added recharts dep).
+Done Check result: `npm run build` and `npm test` pass (5 green); manual check
+pending on your end (edit churn, reload, confirm persistence).
+Decisions worth remembering: assumptions persist to localStorage key
+"counterpart-assumptions" as raw Assumptions JSON, merged over DEFAULT_ASSUMPTIONS
+on load; Reset model clears that key.
+Gotchas: none.
+Next: Phase 4
