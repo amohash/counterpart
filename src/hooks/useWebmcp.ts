@@ -3,11 +3,11 @@ import { registerModelTools, type ModelSnapshot } from '../webmcp';
 
 /**
  * Some embedded browsers (ChatGPT's in-app browser) inject
- * `document.modelContext` after the page mounts, so a one-shot check reports a
- * false negative. Retry on an interval until detected or the window closes.
+ * `document.modelContext` well after the page mounts — sometimes only when the
+ * user activates site tools — so a one-shot check reports a false negative.
+ * Keep retrying for the life of the page; the check is a property read.
  */
-const DETECT_RETRY_MS = 300;
-const DETECT_TIMEOUT_MS = 15000;
+const DETECT_RETRY_MS = 1000;
 
 export function useWebmcp(snapshot: ModelSnapshot): boolean {
   const snapshotRef = useRef(snapshot);
@@ -23,15 +23,9 @@ export function useWebmcp(snapshot: ModelSnapshot): boolean {
       return;
     }
 
-    const startedAt = Date.now();
     const timer = window.setInterval(() => {
       if (registerModelTools(getSnapshot)) {
         setIsDetected(true);
-        window.clearInterval(timer);
-        return;
-      }
-
-      if (Date.now() - startedAt >= DETECT_TIMEOUT_MS) {
         window.clearInterval(timer);
       }
     }, DETECT_RETRY_MS);
