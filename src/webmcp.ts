@@ -37,6 +37,7 @@ declare global {
  */
 let currentGetSnapshot: (() => ModelSnapshot) | undefined;
 let isRegistered = false;
+let hasWarnedMissing = false;
 
 function round(value: number): number | null {
   return Number.isFinite(value) ? Math.round(value) : null;
@@ -82,7 +83,10 @@ export function registerModelTools(getSnapshot: () => ModelSnapshot): boolean {
   currentGetSnapshot = getSnapshot;
 
   if (!modelContext || typeof modelContext.registerTool !== 'function') {
-    console.warn(`${LOG_PREFIX} document.modelContext not available — tools not registered`);
+    if (!hasWarnedMissing) {
+      hasWarnedMissing = true;
+      console.warn(`${LOG_PREFIX} document.modelContext not available yet — will keep retrying`);
+    }
     return false;
   }
 
