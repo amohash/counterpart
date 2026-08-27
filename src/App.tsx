@@ -2,16 +2,23 @@ import { AssumptionsPanel } from './components/AssumptionsPanel';
 import { Headline } from './components/Headline';
 import { MrrChart } from './components/MrrChart';
 import { ProjectionTable } from './components/ProjectionTable';
+import { WebmcpBadge } from './components/WebmcpBadge';
 import { useModelState } from './hooks/useModelState';
 import { useProposals } from './hooks/useProposals';
+import { useWebmcp } from './hooks/useWebmcp';
 
 function App() {
   const { assumptions, output, setAssumption, reset } = useModelState();
-  const { pendingFor, addProposal, accept, reject, acceptAll } = useProposals(setAssumption);
+  const { proposals, pendingFor, addProposal, accept, reject, acceptAll } =
+    useProposals(setAssumption);
+  const isWebmcpDetected = useWebmcp({ assumptions, output, proposals });
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <h1 className="mb-4 text-4xl font-bold">Counterpart</h1>
+      <div className="mb-4 flex items-center gap-3">
+        <h1 className="text-4xl font-bold">Counterpart</h1>
+        <WebmcpBadge isDetected={isWebmcpDetected} />
+      </div>
       <Headline output={output} />
       <div className="mt-6 flex gap-3">
         <button
