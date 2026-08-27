@@ -1,4 +1,6 @@
 import type { Assumptions } from '../model';
+import type { Proposal } from '../proposal';
+import { ProposalHighlight } from './ProposalHighlight';
 
 const FIELDS: { key: keyof Assumptions; label: string }[] = [
   { key: 'startingMRR', label: 'Starting MRR' },
@@ -15,22 +17,45 @@ interface AssumptionsPanelProps {
   assumptions: Assumptions;
   onChange: (key: keyof Assumptions, value: number) => void;
   onReset: () => void;
+  pendingFor: (targetId: keyof Assumptions) => Proposal | undefined;
+  onAcceptProposal: (id: string) => void;
+  onRejectProposal: (id: string) => void;
 }
 
-export function AssumptionsPanel({ assumptions, onChange, onReset }: AssumptionsPanelProps) {
+export function AssumptionsPanel({
+  assumptions,
+  onChange,
+  onReset,
+  pendingFor,
+  onAcceptProposal,
+  onRejectProposal,
+}: AssumptionsPanelProps) {
   return (
     <div className="flex flex-col gap-3">
-      {FIELDS.map(({ key, label }) => (
-        <label key={key} className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">{label}</span>
-          <input
-            type="number"
-            className="rounded border border-gray-300 px-2 py-1"
-            value={assumptions[key]}
-            onChange={(event) => onChange(key, Number(event.target.value))}
-          />
-        </label>
-      ))}
+      {FIELDS.map(({ key, label }) => {
+        const proposal = pendingFor(key);
+        return (
+          <div key={key} className="flex flex-col gap-1">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">{label}</span>
+              <input
+                type="number"
+                className="rounded border border-gray-300 px-2 py-1"
+                value={assumptions[key]}
+                onChange={(event) => onChange(key, Number(event.target.value))}
+              />
+            </label>
+            {proposal && (
+              <ProposalHighlight
+                proposal={proposal}
+                oldValue={assumptions[key]}
+                onAccept={onAcceptProposal}
+                onReject={onRejectProposal}
+              />
+            )}
+          </div>
+        );
+      })}
       <button
         type="button"
         onClick={onReset}

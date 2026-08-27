@@ -32,3 +32,16 @@ Decisions worth remembering: assumptions persist to localStorage key
 on load; Reset model clears that key.
 Gotchas: none.
 Next: Phase 4
+
+## Phase 4 — DONE (2026-08-27)
+Files created/changed: src/proposal.ts, src/proposal.test.ts,
+src/hooks/useProposals.ts, src/components/ProposalHighlight.tsx;
+src/components/AssumptionsPanel.tsx, src/App.tsx (wired proposals).
+Done Check result: `npm test` (8 green) and `npm run build` pass; manual
+click-test (Fake a proposal -> amber highlight -> Accept moves numbers)
+pending on your end.
+Decisions worth remembering: proposals live in-memory only (useState, not
+localStorage) since spec doesn't require persistence; accept applies via
+setAssumption then marks status 'accepted' (kept in array, not removed).
+Gotchas: none.
+Next: Phase 5
