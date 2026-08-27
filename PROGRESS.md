@@ -45,3 +45,22 @@ localStorage) since spec doesn't require persistence; accept applies via
 setAssumption then marks status 'accepted' (kept in array, not removed).
 Gotchas: none.
 Next: Phase 5
+
+## Phase 5 — DONE (2026-08-27)
+Files created/changed: src/webmcp.ts, src/hooks/useWebmcp.ts,
+src/components/WebmcpBadge.tsx, src/App.tsx.
+Done Check result: Part 1 PASSED (Chrome + flag: registers once, executeTool
+returns 793 chars). Part 2 NOT verified — ChatGPT's in-app browser reports
+document.modelContext undefined and shows the badge; Amogh waived it for now
+and wants it revisited before submission.
+Decisions worth remembering: use `document.modelContext` ONLY (reading the
+deprecated `navigator.modelContext` alias just emits a console warning);
+registration is guarded by a module-level flag because StrictMode double-mounts
+(second call throws "Duplicate tool name"); detection retries every 1s for the
+life of the page since some browsers inject the API late; payload carries a
+per-page-load `verificationCode` (temporary, drop in Phase 9) to tell a real
+tool call apart from an agent reading the page.
+Gotchas: Chrome's API is `getTools()` + `executeTool(toolObject, '{}')` — the
+name string and a bare `{}` both fail. An agent quoting a code baked into the
+JS bundle proves nothing; it can fetch the bundle.
+Next: Phase 6
