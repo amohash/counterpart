@@ -21,13 +21,35 @@ interface ToolDefinition {
 }
 
 interface ModelContext {
-  registerTool: (tool: ToolDefinition) => unknown;
+  registerTool?: (tool: ToolDefinition) => unknown;
+  provideContext?: (context: { tools: ToolDefinition[] }) => unknown;
 }
 
 declare global {
   interface Document {
     modelContext?: ModelContext;
   }
+
+  interface Navigator {
+    modelContext?: ModelContext;
+  }
+}
+
+/**
+ * Chrome's testing flag exposes `document.modelContext`; other WebMCP hosts
+ * (including ChatGPT's in-app browser) expose `navigator.modelContext`. Prefer
+ * whichever exists.
+ */
+function resolveModelContext(): { context: ModelContext; where: string } | undefined {
+  if (typeof navigator !== 'undefined' && navigator.modelContext) {
+    return { context: navigator.modelContext, where: 'navigator.modelContext' };
+  }
+
+  if (typeof document !== 'undefined' && document.modelContext) {
+    return { context: document.modelContext, where: 'document.modelContext' };
+  }
+
+  return undefined;
 }
 
 /**
@@ -73,52 +95,60 @@ export function compactJson(snapshot: ModelSnapshot): string {
   return JSON.stringify(payload);
 }
 
+const GET_MODEL_STATE: ToolDefinition = {
+  name: 'get_model_state',
+  description:
+    'Returns the current financial model: assumptions, computed monthly projections, headline metrics, and any pending proposals. Call this first, before anything else.',
+  inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  execute: async () => {
+    const snapshot = currentGetSnapshot?.();
+    if (!snapshot) {
+      console.error(`${LOG_PREFIX} get_model_state called with no snapshot available`);
+      return { content: [{ type: 'text', text: '{"error":"model state unavailable"}' }] };
+    }
+
+    const text = compactJson(snapshot);
+    console.log(`${LOG_PREFIX} get_model_state -> ${text.length} chars`);
+    return { content: [{ type: 'text', text }] };
+  },
+};
+
 /**
- * Registers the WebMCP tools once. Returns false when the browser has no
- * `document.modelContext` (or registration throws) so the UI can show a badge
- * instead of crashing.
+ * Registers the WebMCP tools once. Returns false when the browser exposes no
+ * model context (or registration throws) so the UI can show a badge instead of
+ * crashing.
  */
 export function registerModelTools(getSnapshot: () => ModelSnapshot): boolean {
-  const modelContext = typeof document === 'undefined' ? undefined : document.modelContext;
   currentGetSnapshot = getSnapshot;
 
-  if (!modelContext || typeof modelContext.registerTool !== 'function') {
+  const resolved = resolveModelContext();
+  if (!resolved) {
     if (!hasWarnedMissing) {
       hasWarnedMissing = true;
-      console.warn(`${LOG_PREFIX} document.modelContext not available yet — will keep retrying`);
+      console.warn(`${LOG_PREFIX} no modelContext on navigator or document — will keep retrying`);
     }
     return false;
   }
 
-  if (isRegistered) {
-    console.log(`${LOG_PREFIX} get_model_state already registered — reusing`);
-    return true;
-  }
+  if (isRegistered) return true;
+
+  const { context, where } = resolved;
 
   try {
-    modelContext.registerTool({
-      name: 'get_model_state',
-      description:
-        'Returns the current financial model: assumptions, computed monthly projections, headline metrics, and any pending proposals. Call this first, before anything else.',
-      inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-      execute: async () => {
-        const snapshot = currentGetSnapshot?.();
-        if (!snapshot) {
-          console.error(`${LOG_PREFIX} get_model_state called with no snapshot available`);
-          return { content: [{ type: 'text', text: '{"error":"model state unavailable"}' }] };
-        }
-
-        const text = compactJson(snapshot);
-        console.log(`${LOG_PREFIX} get_model_state -> ${text.length} chars`);
-        return { content: [{ type: 'text', text }] };
-      },
-    });
+    if (typeof context.registerTool === 'function') {
+      context.registerTool(GET_MODEL_STATE);
+    } else if (typeof context.provideContext === 'function') {
+      context.provideContext({ tools: [GET_MODEL_STATE] });
+    } else {
+      console.warn(`${LOG_PREFIX} ${where} exposes neither registerTool nor provideContext`);
+      return false;
+    }
 
     isRegistered = true;
-    console.log(`${LOG_PREFIX} registered get_model_state`);
+    console.log(`${LOG_PREFIX} registered get_model_state via ${where}`);
     return true;
   } catch (error) {
-    console.error(`${LOG_PREFIX} registerTool failed`, error);
+    console.error(`${LOG_PREFIX} registration via ${where} failed`, error);
     return false;
   }
 }
