@@ -47,10 +47,12 @@ let isRegistered = false;
 let hasWarnedMissing = false;
 
 /**
- * Appears only in the tool's JSON, never in the DOM, so an agent that can quote
- * it must have actually called the tool rather than read the page.
+ * Generated fresh on every page load, never rendered in the DOM, and absent
+ * from the deployed bundle — so an agent can only quote it by calling the tool.
+ * The value is logged once so a human can compare.
  */
-const VERIFICATION_CODE = 'CTRPRT-7F3Q-ZEBRA-91';
+const VERIFICATION_CODE = `CTRPRT-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+console.log(`${LOG_PREFIX} verification code for this page load: ${VERIFICATION_CODE}`);
 
 function round(value: number): number | null {
   return Number.isFinite(value) ? Math.round(value) : null;
