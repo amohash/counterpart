@@ -52,6 +52,14 @@ function resolveModelContext(): { context: ModelContext; where: string } | undef
   return undefined;
 }
 
+/** Temporary diagnostic: which WebMCP surfaces this browser exposes. Remove after Phase 5. */
+export function describeSurfaces(): string {
+  const hasNav = typeof navigator !== 'undefined' && Boolean(navigator.modelContext);
+  const hasDoc = typeof document !== 'undefined' && Boolean(document.modelContext);
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent.slice(-40) : 'no-ua';
+  return `nav: ${hasNav ? 'yes' : 'no'}, doc: ${hasDoc ? 'yes' : 'no'}, ua: ${ua}`;
+}
+
 /**
  * Module-level so React StrictMode's double effect invocation (and Vite HMR)
  * cannot register the same tool name twice. The getter is swapped on re-mount
