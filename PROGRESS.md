@@ -10,3 +10,13 @@ in index.css, no tailwind.config.js needed.
 Gotchas: `npm create vite@latest .` hangs/cancels in a non-empty directory even
 with --force; worked around by scaffolding into a temp dir and rsyncing in.
 Next: Phase 2
+
+## Phase 2 — DONE (2026-08-27)
+Files created/changed: src/model.ts, src/model.test.ts; package.json (added
+vitest devDep + "test": "vitest run" script).
+Done Check result: `npm test` passes, 5 green.
+Decisions worth remembering: cumulativeCash starts at 0 (net cash position, not
+absolute bank balance); 100% churn resets customers to newCustomersPerMonth
+each month (steady state, not zero) — tested as decline vs 0% churn baseline.
+Gotchas: none.
+Next: Phase 3
