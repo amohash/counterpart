@@ -36,17 +36,16 @@ declare global {
 }
 
 /**
- * Chrome's testing flag exposes `document.modelContext`; other WebMCP hosts
- * (including ChatGPT's in-app browser) expose `navigator.modelContext`. Prefer
- * whichever exists.
+ * `document.modelContext` is the current WebMCP API; `navigator.modelContext`
+ * is a deprecated alias kept only as a fallback for older hosts.
  */
 function resolveModelContext(): { context: ModelContext; where: string } | undefined {
-  if (typeof navigator !== 'undefined' && navigator.modelContext) {
-    return { context: navigator.modelContext, where: 'navigator.modelContext' };
-  }
-
   if (typeof document !== 'undefined' && document.modelContext) {
     return { context: document.modelContext, where: 'document.modelContext' };
+  }
+
+  if (typeof navigator !== 'undefined' && navigator.modelContext) {
+    return { context: navigator.modelContext, where: 'navigator.modelContext' };
   }
 
   return undefined;
@@ -54,8 +53,8 @@ function resolveModelContext(): { context: ModelContext; where: string } | undef
 
 /** Temporary diagnostic: which WebMCP surfaces this browser exposes. Remove after Phase 5. */
 export function describeSurfaces(): string {
-  const hasNav = typeof navigator !== 'undefined' && Boolean(navigator.modelContext);
   const hasDoc = typeof document !== 'undefined' && Boolean(document.modelContext);
+  const hasNav = typeof navigator !== 'undefined' && Boolean(navigator.modelContext);
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent.slice(-40) : 'no-ua';
   return `nav: ${hasNav ? 'yes' : 'no'}, doc: ${hasDoc ? 'yes' : 'no'}, ua: ${ua}`;
 }
