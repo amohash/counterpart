@@ -21,42 +21,20 @@ interface ToolDefinition {
 }
 
 interface ModelContext {
-  registerTool?: (tool: ToolDefinition) => unknown;
-  provideContext?: (context: { tools: ToolDefinition[] }) => unknown;
+  registerTool: (tool: ToolDefinition) => unknown;
 }
 
 declare global {
   interface Document {
     modelContext?: ModelContext;
   }
-
-  interface Navigator {
-    modelContext?: ModelContext;
-  }
 }
 
-/**
- * `document.modelContext` is the current WebMCP API; `navigator.modelContext`
- * is a deprecated alias kept only as a fallback for older hosts.
- */
-function resolveModelContext(): { context: ModelContext; where: string } | undefined {
-  if (typeof document !== 'undefined' && document.modelContext) {
-    return { context: document.modelContext, where: 'document.modelContext' };
-  }
-
-  if (typeof navigator !== 'undefined' && navigator.modelContext) {
-    return { context: navigator.modelContext, where: 'navigator.modelContext' };
-  }
-
-  return undefined;
-}
-
-/** Temporary diagnostic: which WebMCP surfaces this browser exposes. Remove after Phase 5. */
-export function describeSurfaces(): string {
-  const hasDoc = typeof document !== 'undefined' && Boolean(document.modelContext);
-  const hasNav = typeof navigator !== 'undefined' && Boolean(navigator.modelContext);
-  const ua = typeof navigator !== 'undefined' ? navigator.userAgent.slice(-40) : 'no-ua';
-  return `nav: ${hasNav ? 'yes' : 'no'}, doc: ${hasDoc ? 'yes' : 'no'}, ua: ${ua}`;
+/** `document.modelContext` is the WebMCP API; reading the deprecated
+ * `navigator.modelContext` alias only produces a console warning, so we don't. */
+function resolveModelContext(): ModelContext | undefined {
+  if (typeof document === 'undefined') return undefined;
+  return document.modelContext;
 }
 
 /**
@@ -128,34 +106,24 @@ const GET_MODEL_STATE: ToolDefinition = {
 export function registerModelTools(getSnapshot: () => ModelSnapshot): boolean {
   currentGetSnapshot = getSnapshot;
 
-  const resolved = resolveModelContext();
-  if (!resolved) {
+  const context = resolveModelContext();
+  if (!context || typeof context.registerTool !== 'function') {
     if (!hasWarnedMissing) {
       hasWarnedMissing = true;
-      console.warn(`${LOG_PREFIX} no modelContext on navigator or document — will keep retrying`);
+      console.warn(`${LOG_PREFIX} document.modelContext not available yet — will keep retrying`);
     }
     return false;
   }
 
   if (isRegistered) return true;
 
-  const { context, where } = resolved;
-
   try {
-    if (typeof context.registerTool === 'function') {
-      context.registerTool(GET_MODEL_STATE);
-    } else if (typeof context.provideContext === 'function') {
-      context.provideContext({ tools: [GET_MODEL_STATE] });
-    } else {
-      console.warn(`${LOG_PREFIX} ${where} exposes neither registerTool nor provideContext`);
-      return false;
-    }
-
+    context.registerTool(GET_MODEL_STATE);
     isRegistered = true;
-    console.log(`${LOG_PREFIX} registered get_model_state via ${where}`);
+    console.log(`${LOG_PREFIX} registered get_model_state via document.modelContext`);
     return true;
   } catch (error) {
-    console.error(`${LOG_PREFIX} registration via ${where} failed`, error);
+    console.error(`${LOG_PREFIX} registerTool failed`, error);
     return false;
   }
 }
