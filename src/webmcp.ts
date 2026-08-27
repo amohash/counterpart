@@ -46,6 +46,12 @@ let currentGetSnapshot: (() => ModelSnapshot) | undefined;
 let isRegistered = false;
 let hasWarnedMissing = false;
 
+/**
+ * Appears only in the tool's JSON, never in the DOM, so an agent that can quote
+ * it must have actually called the tool rather than read the page.
+ */
+const VERIFICATION_CODE = 'CTRPRT-7F3Q-ZEBRA-91';
+
 function round(value: number): number | null {
   return Number.isFinite(value) ? Math.round(value) : null;
 }
@@ -55,6 +61,7 @@ export function compactJson(snapshot: ModelSnapshot): string {
   const { assumptions, output, proposals } = snapshot;
 
   const payload = {
+    verificationCode: VERIFICATION_CODE,
     assumptions,
     headline: {
       arr: round(output.rows[output.rows.length - 1]?.arr ?? 0),
