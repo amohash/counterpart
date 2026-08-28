@@ -45,6 +45,24 @@ export function isAssumptionId(value: unknown): value is keyof Assumptions {
   return typeof value === 'string' && (ASSUMPTION_IDS as string[]).includes(value);
 }
 
+/** Numeric fields of a computed monthly row, in the order a chart legend
+ * should list them. The single source of truth for validating an
+ * agent-supplied `seriesIds`. */
+export const MONTHLY_SERIES_IDS = [
+  'customers',
+  'mrr',
+  'arr',
+  'grossProfit',
+  'burn',
+  'cumulativeCash',
+] as const satisfies ReadonlyArray<keyof MonthlyRow>;
+
+export type MonthlySeriesId = (typeof MONTHLY_SERIES_IDS)[number];
+
+export function isMonthlySeriesId(value: unknown): value is MonthlySeriesId {
+  return typeof value === 'string' && (MONTHLY_SERIES_IDS as readonly string[]).includes(value);
+}
+
 function computeRows(assumptions: Assumptions): MonthlyRow[] {
   const churnRate = assumptions.monthlyChurnPct / 100;
   const marginRate = assumptions.grossMarginPct / 100;

@@ -20,6 +20,8 @@ interface AssumptionsPanelProps {
   pendingFor: (targetId: keyof Assumptions) => Proposal | undefined;
   onAcceptProposal: (id: string) => void;
   onRejectProposal: (id: string) => void;
+  annotations: Partial<Record<keyof Assumptions, string>>;
+  highlightedIds: ReadonlySet<keyof Assumptions>;
 }
 
 export function AssumptionsPanel({
@@ -29,13 +31,22 @@ export function AssumptionsPanel({
   pendingFor,
   onAcceptProposal,
   onRejectProposal,
+  annotations,
+  highlightedIds,
 }: AssumptionsPanelProps) {
   return (
     <div className="flex flex-col gap-3">
       {FIELDS.map(({ key, label }) => {
         const proposal = pendingFor(key);
+        const note = annotations[key];
+        const isHighlighted = highlightedIds.has(key);
         return (
-          <div key={key} className="flex flex-col gap-1">
+          <div
+            key={key}
+            className={`flex flex-col gap-1 rounded transition-shadow duration-300 ${
+              isHighlighted ? 'ring-2 ring-blue-500' : ''
+            }`}
+          >
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium">{label}</span>
               <input
@@ -45,6 +56,7 @@ export function AssumptionsPanel({
                 onChange={(event) => onChange(key, Number(event.target.value))}
               />
             </label>
+            {note && <p className="rounded bg-blue-50 p-1 text-xs text-blue-800">{note}</p>}
             {proposal && (
               <ProposalHighlight
                 proposal={proposal}

@@ -100,3 +100,23 @@ entirely (monthlyChurnPct reads as unambiguous to it) — demo on the inspector
 extension, not Chrome's agent. Rejected a hard gate in propose_edit.
 Gotchas: no timeout by design; an unanswered card blocks the agent forever.
 Next: Phase 8
+
+## Phase 8 — DONE (2026-08-28)
+Files created/changed: src/model.ts (+MONTHLY_SERIES_IDS/isMonthlySeriesId),
+src/webmcp.ts (+run_scenario, annotate, add_chart, highlight + validators),
+src/webmcp.test.ts, src/hooks/{useAnnotations,useCharts,useHighlight}.ts (new),
+src/hooks/useWebmcp.ts (actions-object signature), src/components/ExtraChart.tsx
+(new), src/components/AssumptionsPanel.tsx, src/App.tsx.
+Done Check result: 37 tests green, `tsc -b` and `npm run build` clean. Manual
+Chrome + ChatGPT browser check ("compare 3%, 8%, 15% churn, chart cumulative
+cash, flag the risky one") still pending on Amogh's end.
+Decisions worth remembering: run_scenario is pure (no hook, no state — just
+computeModel with validated overrides); annotate keeps one note per assumption
+(later call replaces, doesn't append); useWebmcp now takes an actions object
+`{proposeEdit, askHuman, annotate, addChart, highlight}` instead of positional
+args since it grew past 2; chart/annotation ids follow the existing
+`prefix-${nextId}` counter pattern, not crypto.randomUUID.
+Gotchas: `useRef<number>()` fails under `tsc -b` (needs an initial value) even
+though plain `tsc --noEmit` accepts it — always give useRef an explicit
+`| undefined` type + initial value for timer refs.
+Next: Phase 9

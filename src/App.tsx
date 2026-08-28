@@ -1,9 +1,13 @@
 import { AssumptionsPanel } from './components/AssumptionsPanel';
+import { ExtraChart } from './components/ExtraChart';
 import { Headline } from './components/Headline';
 import { MrrChart } from './components/MrrChart';
 import { ProjectionTable } from './components/ProjectionTable';
 import { QuestionCard } from './components/QuestionCard';
 import { WebmcpBadge } from './components/WebmcpBadge';
+import { useAnnotations } from './hooks/useAnnotations';
+import { useCharts } from './hooks/useCharts';
+import { useHighlight } from './hooks/useHighlight';
 import { useModelState } from './hooks/useModelState';
 import { useProposals } from './hooks/useProposals';
 import { useQuestions } from './hooks/useQuestions';
@@ -14,7 +18,19 @@ function App() {
   const { proposals, pendingFor, addProposal, accept, reject, acceptAll } =
     useProposals(setAssumption);
   const { currentQuestion, askHuman, answer } = useQuestions();
-  const isWebmcpDetected = useWebmcp({ assumptions, output, proposals }, addProposal, askHuman);
+  const { annotations, addAnnotation } = useAnnotations();
+  const { charts, addChart } = useCharts();
+  const { highlightedIds, highlight } = useHighlight();
+  const isWebmcpDetected = useWebmcp(
+    { assumptions, output, proposals },
+    {
+      proposeEdit: addProposal,
+      askHuman,
+      annotate: addAnnotation,
+      addChart,
+      highlight,
+    },
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -45,10 +61,15 @@ function App() {
           pendingFor={pendingFor}
           onAcceptProposal={accept}
           onRejectProposal={reject}
+          annotations={annotations}
+          highlightedIds={highlightedIds}
         />
         <div className="flex flex-col gap-6">
           <MrrChart rows={output.rows} />
           <ProjectionTable rows={output.rows} />
+          {charts.map((chart) => (
+            <ExtraChart key={chart.id} rows={output.rows} seriesIds={chart.seriesIds} title={chart.title} />
+          ))}
         </div>
       </div>
     </div>

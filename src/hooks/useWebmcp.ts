@@ -9,37 +9,35 @@ import { registerModelTools, type ModelActions, type ModelSnapshot } from '../we
  */
 const DETECT_RETRY_MS = 1000;
 
-export function useWebmcp(
-  snapshot: ModelSnapshot,
-  proposeEdit: ModelActions['proposeEdit'],
-  askHuman: ModelActions['askHuman'],
-): boolean {
+export type WebmcpActions = Omit<ModelActions, 'getSnapshot'>;
+
+export function useWebmcp(snapshot: ModelSnapshot, actions: WebmcpActions): boolean {
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
 
-  const proposeEditRef = useRef(proposeEdit);
-  proposeEditRef.current = proposeEdit;
-
-  const askHumanRef = useRef(askHuman);
-  askHumanRef.current = askHuman;
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
 
   const [isDetected, setIsDetected] = useState(false);
 
   useEffect(() => {
-    const actions: ModelActions = {
+    const modelActions: ModelActions = {
       getSnapshot: () => snapshotRef.current,
       proposeEdit: (targetId, newValue, rationale) =>
-        proposeEditRef.current(targetId, newValue, rationale),
-      askHuman: (question, options) => askHumanRef.current(question, options),
+        actionsRef.current.proposeEdit(targetId, newValue, rationale),
+      askHuman: (question, options) => actionsRef.current.askHuman(question, options),
+      annotate: (targetId, text) => actionsRef.current.annotate(targetId, text),
+      addChart: (seriesIds, title) => actionsRef.current.addChart(seriesIds, title),
+      highlight: (targetIds) => actionsRef.current.highlight(targetIds),
     };
 
-    if (registerModelTools(actions)) {
+    if (registerModelTools(modelActions)) {
       setIsDetected(true);
       return;
     }
 
     const timer = window.setInterval(() => {
-      if (registerModelTools(actions)) {
+      if (registerModelTools(modelActions)) {
         setIsDetected(true);
         window.clearInterval(timer);
       }

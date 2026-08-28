@@ -1,4 +1,14 @@
-import { ASSUMPTION_IDS, isAssumptionId, type Assumptions, type ModelOutput } from './model';
+import {
+  ASSUMPTION_IDS,
+  computeModel,
+  isAssumptionId,
+  isMonthlySeriesId,
+  MONTHLY_SERIES_IDS,
+  type Assumptions,
+  type ModelOutput,
+  type MonthlySeriesId,
+} from './model';
+import type { ExtraChartSpec } from './hooks/useCharts';
 import type { Proposal } from './proposal';
 import { validateAskHumanInput } from './questions';
 
@@ -17,6 +27,10 @@ export interface ModelActions {
   proposeEdit: (targetId: keyof Assumptions, newValue: number, rationale: string) => Proposal;
   /** Resolves only once Amogh clicks one of the options. Never rejects, never times out. */
   askHuman: (question: string, options: string[]) => Promise<string>;
+  annotate: (targetId: keyof Assumptions, text: string) => void;
+  addChart: (seriesIds: MonthlySeriesId[], title: string) => ExtraChartSpec;
+  /** Flashes the given rows on the page for 2 seconds. */
+  highlight: (targetIds: Array<keyof Assumptions>) => void;
 }
 
 interface ToolResult {
@@ -244,7 +258,262 @@ const ASK_HUMAN: ToolDefinition = {
   },
 };
 
-const TOOLS: ToolDefinition[] = [GET_MODEL_STATE, PROPOSE_EDIT, ASK_HUMAN];
+export interface RunScenarioInput {
+  overrides: Partial<Assumptions>;
+}
+
+/** Validates that every override key is a real assumption id and every value
+ * is a finite number, so a bad key or a NaN throws instead of silently no-op-ing. */
+export function validateRunScenarioInput(input: unknown): RunScenarioInput {
+  const raw = (input ?? {}) as Record<string, unknown>;
+  const rawOverrides = (raw.overrides ?? {}) as Record<string, unknown>;
+  const overrides: Partial<Assumptions> = {};
+
+  for (const [key, value] of Object.entries(rawOverrides)) {
+    if (!isAssumptionId(key)) {
+      throw new Error(`Unknown override key ${JSON.stringify(key)}. Valid ids: ${ASSUMPTION_IDS.join(', ')}.`);
+    }
+    const numericValue = typeof value === 'string' ? Number(value) : value;
+    if (typeof numericValue !== 'number' || !Number.isFinite(numericValue)) {
+      throw new Error(`Override ${key} must be a finite number, got ${JSON.stringify(value)}.`);
+    }
+    overrides[key] = numericValue;
+  }
+
+  return { overrides };
+}
+
+/** Rounds and formats the same headline shape get_model_state returns, so an
+ * agent can compare scenarios against the live model directly. */
+export function formatRunScenarioResult(output: ModelOutput): string {
+  const arr = output.rows[output.rows.length - 1]?.arr ?? 0;
+  const payload = {
+    arr: Math.round(arr),
+    ltv: Number.isFinite(output.ltv) ? Math.round(output.ltv) : null,
+    ltvOverCac: Number.isFinite(output.ltvOverCac) ? Math.round(output.ltvOverCac * 10) / 10 : null,
+    runwayMonths: Number.isFinite(output.runwayMonths) ? Math.round(output.runwayMonths) : null,
+  };
+  return JSON.stringify(payload);
+}
+
+const RUN_SCENARIO: ToolDefinition = {
+  name: 'run_scenario',
+  description:
+    'Computes headline metrics (arr, ltv, ltvOverCac, runwayMonths) with temporary overrides applied on top of the current assumptions. Nothing on the page changes — this is read-only, for comparing options before calling propose_edit. Call get_model_state first to see valid assumption ids.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      overrides: {
+        type: 'object',
+        description: 'Assumption id -> temporary value, applied only for this calculation.',
+        additionalProperties: { type: 'number' },
+      },
+    },
+    required: ['overrides'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} run_scenario called with no page actions available`);
+      throw new Error('The page is not ready to run scenarios yet.');
+    }
+
+    const { overrides } = validateRunScenarioInput(input);
+    const { assumptions } = actions.getSnapshot();
+    const output = computeModel(assumptions, overrides);
+
+    const text = formatRunScenarioResult(output);
+    console.log(`${LOG_PREFIX} run_scenario -> ${text}`);
+    return { content: [{ type: 'text', text }] };
+  },
+};
+
+export interface AnnotateInput {
+  targetId: keyof Assumptions;
+  text: string;
+}
+
+export function validateAnnotateInput(input: unknown): AnnotateInput {
+  const raw = (input ?? {}) as Record<string, unknown>;
+
+  if (!isAssumptionId(raw.targetId)) {
+    throw new Error(
+      `Unknown targetId ${JSON.stringify(raw.targetId)}. Valid ids: ${ASSUMPTION_IDS.join(', ')}.`,
+    );
+  }
+
+  const text = typeof raw.text === 'string' ? raw.text.trim() : '';
+  if (!text) {
+    throw new Error('text is required — the note shown next to the row.');
+  }
+
+  return { targetId: raw.targetId, text };
+}
+
+const ANNOTATE: ToolDefinition = {
+  name: 'annotate',
+  description:
+    'Pins a short note next to one assumption row on the page, visible to Amogh. A later call for the same targetId replaces the note rather than adding another. Call get_model_state first to see valid assumption ids.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      targetId: {
+        type: 'string',
+        enum: ASSUMPTION_IDS,
+        description: 'Which assumption row to pin the note next to.',
+      },
+      text: { type: 'string', description: 'A short note, one sentence.' },
+    },
+    required: ['targetId', 'text'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} annotate called with no page actions available`);
+      throw new Error('The page is not ready to accept annotations yet.');
+    }
+
+    const { targetId, text } = validateAnnotateInput(input);
+    actions.annotate(targetId, text);
+
+    const result = `Noted on ${targetId}: ${text}`;
+    console.log(`${LOG_PREFIX} annotate -> ${result}`);
+    return { content: [{ type: 'text', text: result }] };
+  },
+};
+
+export interface AddChartInput {
+  seriesIds: MonthlySeriesId[];
+  title: string;
+}
+
+export function validateAddChartInput(input: unknown): AddChartInput {
+  const raw = (input ?? {}) as Record<string, unknown>;
+  const rawSeriesIds = Array.isArray(raw.seriesIds) ? raw.seriesIds : [];
+
+  if (rawSeriesIds.length === 0) {
+    throw new Error(`seriesIds is required — at least one of ${MONTHLY_SERIES_IDS.join(', ')}.`);
+  }
+
+  const seriesIds = rawSeriesIds.map((seriesId) => {
+    if (!isMonthlySeriesId(seriesId)) {
+      throw new Error(
+        `Unknown seriesId ${JSON.stringify(seriesId)}. Valid ids: ${MONTHLY_SERIES_IDS.join(', ')}.`,
+      );
+    }
+    return seriesId;
+  });
+
+  const title = typeof raw.title === 'string' ? raw.title.trim() : '';
+  if (!title) {
+    throw new Error('title is required — shown above the chart.');
+  }
+
+  return { seriesIds, title };
+}
+
+const ADD_CHART: ToolDefinition = {
+  name: 'add_chart',
+  description:
+    'Adds a new line chart below the existing charts, plotting one or more monthly series. Does not replace or change the existing MRR chart. Call get_model_state first if unsure which series are available.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      seriesIds: {
+        type: 'array',
+        items: { type: 'string', enum: MONTHLY_SERIES_IDS },
+        minItems: 1,
+        description: 'Which monthly series to plot together on this chart.',
+      },
+      title: { type: 'string', description: 'Title shown above the chart.' },
+    },
+    required: ['seriesIds', 'title'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} add_chart called with no page actions available`);
+      throw new Error('The page is not ready to add charts yet.');
+    }
+
+    const { seriesIds, title } = validateAddChartInput(input);
+    const chart = actions.addChart(seriesIds, title);
+
+    const result = `Added chart "${title}" (${seriesIds.join(', ')}).`;
+    console.log(`${LOG_PREFIX} add_chart -> ${chart.id} ${result}`);
+    return { content: [{ type: 'text', text: result }] };
+  },
+};
+
+export interface HighlightInput {
+  targetIds: Array<keyof Assumptions>;
+}
+
+export function validateHighlightInput(input: unknown): HighlightInput {
+  const raw = (input ?? {}) as Record<string, unknown>;
+  const rawTargetIds = Array.isArray(raw.targetIds) ? raw.targetIds : [];
+
+  if (rawTargetIds.length === 0) {
+    throw new Error('targetIds is required — at least one assumption id to flash.');
+  }
+
+  const targetIds = rawTargetIds.map((targetId) => {
+    if (!isAssumptionId(targetId)) {
+      throw new Error(
+        `Unknown targetId ${JSON.stringify(targetId)}. Valid ids: ${ASSUMPTION_IDS.join(', ')}.`,
+      );
+    }
+    return targetId;
+  });
+
+  return { targetIds };
+}
+
+const HIGHLIGHT: ToolDefinition = {
+  name: 'highlight',
+  description:
+    'Flashes one or more assumption rows on the page for 2 seconds, to draw Amogh\'s attention to them — for example the row most responsible for a risky scenario. Call get_model_state first to see valid assumption ids.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      targetIds: {
+        type: 'array',
+        items: { type: 'string', enum: ASSUMPTION_IDS },
+        minItems: 1,
+        description: 'Which assumption rows to flash.',
+      },
+    },
+    required: ['targetIds'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} highlight called with no page actions available`);
+      throw new Error('The page is not ready to highlight rows yet.');
+    }
+
+    const { targetIds } = validateHighlightInput(input);
+    actions.highlight(targetIds);
+
+    const result = `Highlighted ${targetIds.join(', ')} for 2 seconds.`;
+    console.log(`${LOG_PREFIX} highlight -> ${result}`);
+    return { content: [{ type: 'text', text: result }] };
+  },
+};
+
+const TOOLS: ToolDefinition[] = [
+  GET_MODEL_STATE,
+  PROPOSE_EDIT,
+  ASK_HUMAN,
+  RUN_SCENARIO,
+  ANNOTATE,
+  ADD_CHART,
+  HIGHLIGHT,
+];
 
 /**
  * Registers the WebMCP tools once. Returns false when the browser exposes no
