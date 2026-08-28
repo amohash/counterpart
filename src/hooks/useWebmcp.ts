@@ -23,8 +23,8 @@ export function useWebmcp(snapshot: ModelSnapshot, actions: WebmcpActions): bool
   useEffect(() => {
     const modelActions: ModelActions = {
       getSnapshot: () => snapshotRef.current,
-      proposeEdit: (targetId, newValue, rationale) =>
-        actionsRef.current.proposeEdit(targetId, newValue, rationale),
+      proposeEdit: (targetId, newValue, rationale, agentName) =>
+        actionsRef.current.proposeEdit(targetId, newValue, rationale, agentName),
       askHuman: (question, options) => actionsRef.current.askHuman(question, options),
       annotate: (targetId, text) => actionsRef.current.annotate(targetId, text),
       addChart: (seriesIds, title) => actionsRef.current.addChart(seriesIds, title),

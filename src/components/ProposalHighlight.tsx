@@ -10,6 +10,12 @@ interface ProposalHighlightProps {
 export function ProposalHighlight({ proposal, oldValue, onAccept, onReject }: ProposalHighlightProps) {
   return (
     <div className="animate-fade-in rounded border border-amber-400 bg-amber-50 p-2 text-xs">
+      <span
+        className="mb-1 inline-block rounded px-1.5 py-0.5 font-semibold text-white"
+        style={{ backgroundColor: proposal.agentColor }}
+      >
+        {proposal.agentId}
+      </span>
       <p className="font-medium text-amber-800">
         {oldValue} → {proposal.newValue}
       </p>

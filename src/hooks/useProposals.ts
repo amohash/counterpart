@@ -5,7 +5,12 @@ import { createProposal, withStatus, type Proposal } from '../proposal';
 interface UseProposalsResult {
   proposals: Proposal[];
   pendingFor: (targetId: keyof Assumptions) => Proposal | undefined;
-  addProposal: (targetId: keyof Assumptions, newValue: number, rationale: string) => Proposal;
+  addProposal: (
+    targetId: keyof Assumptions,
+    newValue: number,
+    rationale: string,
+    agentName: string,
+  ) => Proposal;
   accept: (id: string) => void;
   reject: (id: string) => void;
   acceptAll: () => void;
@@ -19,8 +24,13 @@ export function useProposals(
   const pendingFor = (targetId: keyof Assumptions) =>
     proposals.find((proposal) => proposal.targetId === targetId && proposal.status === 'pending');
 
-  const addProposal = (targetId: keyof Assumptions, newValue: number, rationale: string) => {
-    const proposal = createProposal(targetId, newValue, rationale);
+  const addProposal = (
+    targetId: keyof Assumptions,
+    newValue: number,
+    rationale: string,
+    agentName: string,
+  ) => {
+    const proposal = createProposal(targetId, newValue, rationale, agentName);
     setProposals((current) => [...current, proposal]);
     return proposal;
   };

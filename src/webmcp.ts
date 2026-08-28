@@ -24,7 +24,12 @@ export interface ModelSnapshot {
  * already-registered tools always reach live React state. */
 export interface ModelActions {
   getSnapshot: () => ModelSnapshot;
-  proposeEdit: (targetId: keyof Assumptions, newValue: number, rationale: string) => Proposal;
+  proposeEdit: (
+    targetId: keyof Assumptions,
+    newValue: number,
+    rationale: string,
+    agentName: string,
+  ) => Proposal;
   /** Resolves only once Amogh clicks one of the options. Never rejects, never times out. */
   askHuman: (question: string, options: string[]) => Promise<string>;
   annotate: (targetId: keyof Assumptions, text: string) => void;
@@ -135,6 +140,7 @@ export interface ProposeEditInput {
   targetId: keyof Assumptions;
   newValue: number;
   rationale: string;
+  agentName: string;
 }
 
 /**
@@ -161,7 +167,12 @@ export function validateProposeEditInput(input: unknown): ProposeEditInput {
     throw new Error('rationale is required — explain why this change is worth making.');
   }
 
-  return { targetId: raw.targetId, newValue, rationale };
+  const agentName = typeof raw.agentName === 'string' ? raw.agentName.trim() : '';
+  if (!agentName) {
+    throw new Error('agentName is required — which agent is making this proposal.');
+  }
+
+  return { targetId: raw.targetId, newValue, rationale, agentName };
 }
 
 /** The exact sentence the agent reads back, so it knows the edit is not applied yet. */
@@ -190,8 +201,12 @@ const PROPOSE_EDIT: ToolDefinition = {
         type: 'string',
         description: 'One short sentence on why this change is worth making.',
       },
+      agentName: {
+        type: 'string',
+        description: 'Which agent is proposing this, e.g. "Growth" or "Risk".',
+      },
     },
-    required: ['targetId', 'newValue', 'rationale'],
+    required: ['targetId', 'newValue', 'rationale', 'agentName'],
     additionalProperties: false,
   },
   execute: async (input) => {
@@ -201,9 +216,9 @@ const PROPOSE_EDIT: ToolDefinition = {
       throw new Error('The page is not ready to accept proposals yet.');
     }
 
-    const { targetId, newValue, rationale } = validateProposeEditInput(input);
+    const { targetId, newValue, rationale, agentName } = validateProposeEditInput(input);
     const oldValue = actions.getSnapshot().assumptions[targetId];
-    const proposal = actions.proposeEdit(targetId, newValue, rationale);
+    const proposal = actions.proposeEdit(targetId, newValue, rationale, agentName);
 
     const text = formatProposeEditResult(targetId, oldValue, newValue);
     console.log(`${LOG_PREFIX} propose_edit -> ${proposal.id} ${text}`);

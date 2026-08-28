@@ -13,7 +13,12 @@ import {
 describe('validateProposeEditInput', () => {
   test('accepts a valid proposal and trims the rationale', () => {
     // Arrange
-    const input = { targetId: 'monthlyChurnPct', newValue: 15, rationale: '  Churn looks low  ' };
+    const input = {
+      targetId: 'monthlyChurnPct',
+      newValue: 15,
+      rationale: '  Churn looks low  ',
+      agentName: 'Growth',
+    };
 
     // Act
     const result = validateProposeEditInput(input);
@@ -23,12 +28,18 @@ describe('validateProposeEditInput', () => {
       targetId: 'monthlyChurnPct',
       newValue: 15,
       rationale: 'Churn looks low',
+      agentName: 'Growth',
     });
   });
 
   test('coerces a numeric string newValue', () => {
     // Arrange
-    const input = { targetId: 'cac', newValue: '1500', rationale: 'Paid channels got pricier' };
+    const input = {
+      targetId: 'cac',
+      newValue: '1500',
+      rationale: 'Paid channels got pricier',
+      agentName: 'Risk',
+    };
 
     // Act
     const result = validateProposeEditInput(input);

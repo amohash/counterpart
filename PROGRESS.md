@@ -77,6 +77,8 @@ Decisions worth remembering: registerModelTools now takes a ModelActions object
 once still reach live React state; agent args are validated in
 validateProposeEditInput, which THROWS (unknown targetId, non-finite newValue,
 blank rationale) so the agent sees a correctable error.
+UPDATE (Phase 11): propose_edit's schema changed — it now requires a fourth
+agentName input; proposeEdit/addProposal/createProposal all take agentName too.
 Gotchas: getTools() returns a Promise of a non-array iterable — use
 Array.from(await ...). Chrome's own agent may ignore our tools and type into the
 input via the DOM instead; that bypass is not preventable from the page. ChatGPT
@@ -144,4 +146,16 @@ README pastes the real get_model_state registerTool block from src/webmcp.ts
 verbatim; DEMO_SCRIPT.md assumes recording in Chrome with the Model Context
 Tool Inspector extension (Phase 7 decision), not Chrome's built-in agent.
 Gotchas: none.
-Next: none — all phases complete.
+Next: Phase 11
+
+## Phase 11 — DONE (2026-08-28)
+Files created/changed: src/proposal.ts, src/proposal.test.ts, src/webmcp.ts,
+src/webmcp.test.ts, src/hooks/useProposals.ts, src/hooks/useWebmcp.ts,
+src/components/ProposalHighlight.tsx, PROGRESS.md (Phase 6 note updated).
+Done Check result: two propose_edit calls with different agentName values
+render two differently-colored badges; 37 tests green, tsc -b and build clean.
+Decisions worth remembering: agentId is just the raw agentName string (no
+separate slug); agentColor comes from a fixed 6-color palette assigned in
+first-seen order via a module-level Map in proposal.ts (getAgentColor).
+Gotchas: none.
+Next: Phase 12
