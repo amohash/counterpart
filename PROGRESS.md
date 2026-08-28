@@ -108,8 +108,10 @@ src/webmcp.test.ts, src/hooks/{useAnnotations,useCharts,useHighlight}.ts (new),
 src/hooks/useWebmcp.ts (actions-object signature), src/components/ExtraChart.tsx
 (new), src/components/AssumptionsPanel.tsx, src/App.tsx.
 Done Check result: 37 tests green, `tsc -b` and `npm run build` clean. Manual
-Chrome + ChatGPT browser check ("compare 3%, 8%, 15% churn, chart cumulative
-cash, flag the risky one") still pending on Amogh's end.
+check PASSED in both Chrome (flag on) and ChatGPT's in-app browser on the
+deployed Vercel URL — "compare 3%, 8%, 15% churn, chart cumulative cash, flag
+the risky one" fired all four tools in both. This also resolves the Phase 5
+part 2 gap: ChatGPT's in-app browser now reports document.modelContext.
 Decisions worth remembering: run_scenario is pure (no hook, no state — just
 computeModel with validated overrides); annotate keeps one note per assumption
 (later call replaces, doesn't append); useWebmcp now takes an actions object
