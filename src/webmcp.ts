@@ -1,4 +1,4 @@
-import type { Assumptions, ModelOutput } from './model';
+import { ASSUMPTION_IDS, isAssumptionId, type Assumptions, type ModelOutput } from './model';
 import type { Proposal } from './proposal';
 
 const LOG_PREFIX = '[webmcp]';
@@ -9,6 +9,13 @@ export interface ModelSnapshot {
   proposals: Proposal[];
 }
 
+/** Everything the page lets a tool do. Held in a module-level ref so the
+ * already-registered tools always reach live React state. */
+export interface ModelActions {
+  getSnapshot: () => ModelSnapshot;
+  proposeEdit: (targetId: keyof Assumptions, newValue: number, rationale: string) => Proposal;
+}
+
 interface ToolResult {
   content: Array<{ type: 'text'; text: string }>;
 }
@@ -17,7 +24,7 @@ interface ToolDefinition {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
-  execute: () => Promise<ToolResult>;
+  execute: (input?: unknown) => Promise<ToolResult>;
 }
 
 interface ModelContext {
@@ -42,7 +49,7 @@ function resolveModelContext(): ModelContext | undefined {
  * cannot register the same tool name twice. The getter is swapped on re-mount
  * so the already-registered tool keeps reading live state.
  */
-let currentGetSnapshot: (() => ModelSnapshot) | undefined;
+let currentActions: ModelActions | undefined;
 let isRegistered = false;
 let hasWarnedMissing = false;
 
@@ -95,7 +102,7 @@ const GET_MODEL_STATE: ToolDefinition = {
     'Returns the current financial model: assumptions, computed monthly projections, headline metrics, and any pending proposals. Call this first, before anything else.',
   inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   execute: async () => {
-    const snapshot = currentGetSnapshot?.();
+    const snapshot = currentActions?.getSnapshot();
     if (!snapshot) {
       console.error(`${LOG_PREFIX} get_model_state called with no snapshot available`);
       return { content: [{ type: 'text', text: '{"error":"model state unavailable"}' }] };
@@ -107,13 +114,95 @@ const GET_MODEL_STATE: ToolDefinition = {
   },
 };
 
+export interface ProposeEditInput {
+  targetId: keyof Assumptions;
+  newValue: number;
+  rationale: string;
+}
+
+/**
+ * Validates agent-supplied arguments at the boundary. Throws so the failure
+ * surfaces to the agent as a tool error it can read and correct, rather than a
+ * silently ignored call.
+ */
+export function validateProposeEditInput(input: unknown): ProposeEditInput {
+  const raw = (input ?? {}) as Record<string, unknown>;
+
+  if (!isAssumptionId(raw.targetId)) {
+    throw new Error(
+      `Unknown targetId ${JSON.stringify(raw.targetId)}. Valid ids: ${ASSUMPTION_IDS.join(', ')}.`,
+    );
+  }
+
+  const newValue = typeof raw.newValue === 'string' ? Number(raw.newValue) : raw.newValue;
+  if (typeof newValue !== 'number' || !Number.isFinite(newValue)) {
+    throw new Error(`newValue must be a finite number, got ${JSON.stringify(raw.newValue)}.`);
+  }
+
+  const rationale = typeof raw.rationale === 'string' ? raw.rationale.trim() : '';
+  if (!rationale) {
+    throw new Error('rationale is required — explain why this change is worth making.');
+  }
+
+  return { targetId: raw.targetId, newValue, rationale };
+}
+
+/** The exact sentence the agent reads back, so it knows the edit is not applied yet. */
+export function formatProposeEditResult(
+  targetId: keyof Assumptions,
+  oldValue: number,
+  newValue: number,
+): string {
+  return `Proposed ${targetId} ${oldValue} -> ${newValue}. Awaiting Amogh's approval.`;
+}
+
+const PROPOSE_EDIT: ToolDefinition = {
+  name: 'propose_edit',
+  description:
+    "Proposes a change to one assumption. The change is NOT applied — it appears on the page as a pending proposal that Amogh must accept or reject, and the numbers do not move until he accepts. Call get_model_state first to see valid assumption ids and current values.",
+  inputSchema: {
+    type: 'object',
+    properties: {
+      targetId: {
+        type: 'string',
+        enum: ASSUMPTION_IDS,
+        description: 'Which assumption to change.',
+      },
+      newValue: { type: 'number', description: 'The proposed new value.' },
+      rationale: {
+        type: 'string',
+        description: 'One short sentence on why this change is worth making.',
+      },
+    },
+    required: ['targetId', 'newValue', 'rationale'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} propose_edit called with no page actions available`);
+      throw new Error('The page is not ready to accept proposals yet.');
+    }
+
+    const { targetId, newValue, rationale } = validateProposeEditInput(input);
+    const oldValue = actions.getSnapshot().assumptions[targetId];
+    const proposal = actions.proposeEdit(targetId, newValue, rationale);
+
+    const text = formatProposeEditResult(targetId, oldValue, newValue);
+    console.log(`${LOG_PREFIX} propose_edit -> ${proposal.id} ${text}`);
+    return { content: [{ type: 'text', text }] };
+  },
+};
+
+const TOOLS: ToolDefinition[] = [GET_MODEL_STATE, PROPOSE_EDIT];
+
 /**
  * Registers the WebMCP tools once. Returns false when the browser exposes no
  * model context (or registration throws) so the UI can show a badge instead of
  * crashing.
  */
-export function registerModelTools(getSnapshot: () => ModelSnapshot): boolean {
-  currentGetSnapshot = getSnapshot;
+export function registerModelTools(actions: ModelActions): boolean {
+  currentActions = actions;
 
   const context = resolveModelContext();
   if (!context || typeof context.registerTool !== 'function') {
@@ -127,9 +216,10 @@ export function registerModelTools(getSnapshot: () => ModelSnapshot): boolean {
   if (isRegistered) return true;
 
   try {
-    context.registerTool(GET_MODEL_STATE);
+    TOOLS.forEach((tool) => context.registerTool(tool));
     isRegistered = true;
-    console.log(`${LOG_PREFIX} registered get_model_state via document.modelContext`);
+    const names = TOOLS.map((tool) => tool.name).join(', ');
+    console.log(`${LOG_PREFIX} registered ${names} via document.modelContext`);
     return true;
   } catch (error) {
     console.error(`${LOG_PREFIX} registerTool failed`, error);

@@ -11,7 +11,7 @@ function App() {
   const { assumptions, output, setAssumption, reset } = useModelState();
   const { proposals, pendingFor, addProposal, accept, reject, acceptAll } =
     useProposals(setAssumption);
-  const isWebmcpDetected = useWebmcp({ assumptions, output, proposals });
+  const isWebmcpDetected = useWebmcp({ assumptions, output, proposals }, addProposal);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -27,13 +27,6 @@ function App() {
           className="rounded bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
         >
           Accept all
-        </button>
-        <button
-          type="button"
-          onClick={() => addProposal('monthlyChurnPct', 15, 'Fake proposal for testing')}
-          className="rounded bg-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-300"
-        >
-          Fake a proposal
         </button>
       </div>
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">

@@ -64,3 +64,21 @@ Gotchas: Chrome's API is `getTools()` + `executeTool(toolObject, '{}')` — the
 name string and a bare `{}` both fail. An agent quoting a code baked into the
 JS bundle proves nothing; it can fetch the bundle.
 Next: Phase 6
+
+## Phase 6 — DONE (2026-08-28)
+Files created/changed: src/webmcp.ts, src/webmcp.test.ts, src/model.ts
+(+ASSUMPTION_IDS/isAssumptionId), src/hooks/useWebmcp.ts, src/App.tsx
+(removed "Fake a proposal" button).
+Done Check result: Chrome + flag — getTools() lists both tools; executeTool on
+propose_edit returned "Proposed monthlyChurnPct 3 -> 15. Awaiting Amogh's
+approval.", amber highlight appeared, numbers only moved on Accept. 14 tests green.
+Decisions worth remembering: registerModelTools now takes a ModelActions object
+({getSnapshot, proposeEdit}) held in one module-level ref, so tools registered
+once still reach live React state; agent args are validated in
+validateProposeEditInput, which THROWS (unknown targetId, non-finite newValue,
+blank rationale) so the agent sees a correctable error.
+Gotchas: getTools() returns a Promise of a non-array iterable — use
+Array.from(await ...). Chrome's own agent may ignore our tools and type into the
+input via the DOM instead; that bypass is not preventable from the page. ChatGPT
+app/extension still has no document.modelContext (Phase 5 part 2, still open).
+Next: Phase 7

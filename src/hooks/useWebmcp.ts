@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { registerModelTools, type ModelSnapshot } from '../webmcp';
+import { registerModelTools, type ModelActions, type ModelSnapshot } from '../webmcp';
 
 /**
  * Some embedded browsers (ChatGPT's in-app browser) inject
@@ -9,22 +9,32 @@ import { registerModelTools, type ModelSnapshot } from '../webmcp';
  */
 const DETECT_RETRY_MS = 1000;
 
-export function useWebmcp(snapshot: ModelSnapshot): boolean {
+export function useWebmcp(
+  snapshot: ModelSnapshot,
+  proposeEdit: ModelActions['proposeEdit'],
+): boolean {
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
+
+  const proposeEditRef = useRef(proposeEdit);
+  proposeEditRef.current = proposeEdit;
 
   const [isDetected, setIsDetected] = useState(false);
 
   useEffect(() => {
-    const getSnapshot = () => snapshotRef.current;
+    const actions: ModelActions = {
+      getSnapshot: () => snapshotRef.current,
+      proposeEdit: (targetId, newValue, rationale) =>
+        proposeEditRef.current(targetId, newValue, rationale),
+    };
 
-    if (registerModelTools(getSnapshot)) {
+    if (registerModelTools(actions)) {
       setIsDetected(true);
       return;
     }
 
     const timer = window.setInterval(() => {
-      if (registerModelTools(getSnapshot)) {
+      if (registerModelTools(actions)) {
         setIsDetected(true);
         window.clearInterval(timer);
       }

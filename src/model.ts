@@ -37,6 +37,14 @@ export const DEFAULT_ASSUMPTIONS: Assumptions = {
   months: 24,
 };
 
+/** Every editable assumption id. The single source of truth for validating an
+ * agent-supplied `targetId`. */
+export const ASSUMPTION_IDS = Object.keys(DEFAULT_ASSUMPTIONS) as Array<keyof Assumptions>;
+
+export function isAssumptionId(value: unknown): value is keyof Assumptions {
+  return typeof value === 'string' && (ASSUMPTION_IDS as string[]).includes(value);
+}
+
 function computeRows(assumptions: Assumptions): MonthlyRow[] {
   const churnRate = assumptions.monthlyChurnPct / 100;
   const marginRate = assumptions.grossMarginPct / 100;
