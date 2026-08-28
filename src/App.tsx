@@ -43,6 +43,16 @@ function App() {
           <QuestionCard question={currentQuestion} onAnswer={answer} />
         </div>
       )}
+      {proposals.length === 0 && charts.length === 0 && Object.keys(annotations).length === 0 && (
+        <div className="mb-6 rounded border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-600">
+          <p className="font-medium text-gray-800">Try asking the agent something, e.g.:</p>
+          <ul className="mt-2 list-inside list-disc space-y-1">
+            <li>"Raise churn to 15% and tell me what happens to runway"</li>
+            <li>"Compare 3%, 8%, and 15% churn, chart cumulative cash, and flag the risky one"</li>
+            <li>"Annotate CAC with a note about our last fundraise"</li>
+          </ul>
+        </div>
+      )}
       <Headline output={output} />
       <div className="mt-6 flex gap-3">
         <button

@@ -7,7 +7,7 @@ interface QuestionCardProps {
 
 export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
   return (
-    <div className="rounded-lg border-2 border-indigo-400 bg-indigo-50 p-4">
+    <div className="animate-fade-in rounded-lg border-2 border-indigo-400 bg-indigo-50 p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500">
         The agent is asking you
       </p>

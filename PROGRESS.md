@@ -122,3 +122,15 @@ Gotchas: `useRef<number>()` fails under `tsc -b` (needs an initial value) even
 though plain `tsc --noEmit` accepts it — always give useRef an explicit
 `| undefined` type + initial value for timer refs.
 Next: Phase 9
+
+## Phase 9 — DONE (2026-08-28)
+Files created/changed: src/index.css (+fade-in keyframes/class),
+src/components/ProposalHighlight.tsx, src/components/QuestionCard.tsx
+(applied animate-fade-in), src/App.tsx (+empty state with 3 example prompts).
+Done Check result: 37 tests green, `tsc -b` and `npm run build` clean.
+Decisions worth remembering: number formatting already used
+Intl.NumberFormat with thousands separators since Phase 3/8 — no change
+needed there; empty state shows only when no proposals/charts/annotations
+exist yet, so it disappears once the agent does anything.
+Gotchas: none.
+Next: Phase 10

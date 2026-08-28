@@ -9,7 +9,7 @@ interface ProposalHighlightProps {
 
 export function ProposalHighlight({ proposal, oldValue, onAccept, onReject }: ProposalHighlightProps) {
   return (
-    <div className="rounded border border-amber-400 bg-amber-50 p-2 text-xs">
+    <div className="animate-fade-in rounded border border-amber-400 bg-amber-50 p-2 text-xs">
       <p className="font-medium text-amber-800">
         {oldValue} → {proposal.newValue}
       </p>
