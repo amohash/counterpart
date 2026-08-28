@@ -134,3 +134,14 @@ needed there; empty state shows only when no proposals/charts/annotations
 exist yet, so it disappears once the agent does anything.
 Gotchas: none.
 Next: Phase 10
+
+## Phase 10 — DONE (2026-08-28)
+Files created/changed: README.md (rewritten), DEMO_SCRIPT.md (new).
+Done Check result: README has all seven required headings in order; both files
+exist. No code touched, LICENSE untouched.
+Decisions worth remembering: live URL is https://counterpart-sandy.vercel.app;
+README pastes the real get_model_state registerTool block from src/webmcp.ts
+verbatim; DEMO_SCRIPT.md assumes recording in Chrome with the Model Context
+Tool Inspector extension (Phase 7 decision), not Chrome's built-in agent.
+Gotchas: none.
+Next: none — all phases complete.
