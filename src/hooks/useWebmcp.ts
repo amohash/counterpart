@@ -12,12 +12,16 @@ const DETECT_RETRY_MS = 1000;
 export function useWebmcp(
   snapshot: ModelSnapshot,
   proposeEdit: ModelActions['proposeEdit'],
+  askHuman: ModelActions['askHuman'],
 ): boolean {
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
 
   const proposeEditRef = useRef(proposeEdit);
   proposeEditRef.current = proposeEdit;
+
+  const askHumanRef = useRef(askHuman);
+  askHumanRef.current = askHuman;
 
   const [isDetected, setIsDetected] = useState(false);
 
@@ -26,6 +30,7 @@ export function useWebmcp(
       getSnapshot: () => snapshotRef.current,
       proposeEdit: (targetId, newValue, rationale) =>
         proposeEditRef.current(targetId, newValue, rationale),
+      askHuman: (question, options) => askHumanRef.current(question, options),
     };
 
     if (registerModelTools(actions)) {

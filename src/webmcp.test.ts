@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { formatProposeEditResult, validateProposeEditInput } from './webmcp';
+import { formatAskHumanResult, formatProposeEditResult, validateProposeEditInput } from './webmcp';
 
 describe('validateProposeEditInput', () => {
   test('accepts a valid proposal and trims the rationale', () => {
@@ -61,5 +61,19 @@ describe('formatProposeEditResult', () => {
 
     // Assert
     expect(text).toBe("Proposed monthlyChurnPct 3 -> 15. Awaiting Amogh's approval.");
+  });
+});
+
+describe('formatAskHumanResult', () => {
+  test('leads with the chosen option and tells the agent to keep going', () => {
+    // Arrange
+    const answer = 'monthly';
+
+    // Act
+    const result = formatAskHumanResult(answer);
+
+    // Assert
+    expect(result.startsWith('monthly')).toBe(true);
+    expect(result).toMatch(/continue the task/);
   });
 });

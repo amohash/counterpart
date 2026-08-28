@@ -82,3 +82,21 @@ Array.from(await ...). Chrome's own agent may ignore our tools and type into the
 input via the DOM instead; that bypass is not preventable from the page. ChatGPT
 app/extension still has no document.modelContext (Phase 5 part 2, still open).
 Next: Phase 7
+
+## Phase 7 — DONE (2026-08-28)
+Files created/changed: src/questions.ts, src/questions.test.ts,
+src/hooks/useQuestions.ts, src/components/QuestionCard.tsx; src/webmcp.ts
+(+ask_human tool, formatAskHumanResult, stronger descriptions), src/webmcp.test.ts,
+src/hooks/useWebmcp.ts, src/App.tsx.
+Done Check result: PASSED in Chrome with the Model Context Tool Inspector
+extension + Gemini API key — "model 15% churn" asked monthly vs annual, then
+proposed the edit for accept. 22 tests green, tsc clean.
+Decisions worth remembering: askHuman resolvers live in a useRef Map (not state)
+so a StrictMode remount cannot drop a promise the agent awaits; only queue[0]
+renders, others wait; ask_human returns the chosen option PLUS "continue the
+task now using this answer" because Chrome's built-in agent otherwise ends its
+turn after a blocking tool call. Chrome's built-in agent often skips ask_human
+entirely (monthlyChurnPct reads as unambiguous to it) — demo on the inspector
+extension, not Chrome's agent. Rejected a hard gate in propose_edit.
+Gotchas: no timeout by design; an unanswered card blocks the agent forever.
+Next: Phase 8

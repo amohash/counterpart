@@ -1,5 +1,6 @@
 import { ASSUMPTION_IDS, isAssumptionId, type Assumptions, type ModelOutput } from './model';
 import type { Proposal } from './proposal';
+import { validateAskHumanInput } from './questions';
 
 const LOG_PREFIX = '[webmcp]';
 
@@ -14,6 +15,8 @@ export interface ModelSnapshot {
 export interface ModelActions {
   getSnapshot: () => ModelSnapshot;
   proposeEdit: (targetId: keyof Assumptions, newValue: number, rationale: string) => Proposal;
+  /** Resolves only once Amogh clicks one of the options. Never rejects, never times out. */
+  askHuman: (question: string, options: string[]) => Promise<string>;
 }
 
 interface ToolResult {
@@ -159,7 +162,7 @@ export function formatProposeEditResult(
 const PROPOSE_EDIT: ToolDefinition = {
   name: 'propose_edit',
   description:
-    "Proposes a change to one assumption. The change is NOT applied — it appears on the page as a pending proposal that Amogh must accept or reject, and the numbers do not move until he accepts. Call get_model_state first to see valid assumption ids and current values.",
+    "Proposes a change to one assumption. The change is NOT applied — it appears on the page as a pending proposal that Amogh must accept or reject, and the numbers do not move until he accepts. Call get_model_state first to see valid assumption ids and current values. If Amogh's request is ambiguous about which assumption, what unit, or what time period he means (for example \"15% churn\" could be monthly or annual), you MUST call ask_human to resolve it before calling this tool — do not guess and do not state your assumption instead of asking.",
   inputSchema: {
     type: 'object',
     properties: {
@@ -194,7 +197,54 @@ const PROPOSE_EDIT: ToolDefinition = {
   },
 };
 
-const TOOLS: ToolDefinition[] = [GET_MODEL_STATE, PROPOSE_EDIT];
+/**
+ * Chrome's agent treats a long-blocking tool call as the end of its turn and
+ * stops. Returning the answer plus an explicit instruction to continue keeps it
+ * working; the chosen option is still the first thing it reads.
+ */
+export function formatAskHumanResult(answer: string): string {
+  return `${answer} — Amogh answered; continue the task now using this answer.`;
+}
+
+const ASK_HUMAN: ToolDefinition = {
+  name: 'ask_human',
+  description:
+    "Asks Amogh a question and waits for his answer, returning the exact option he chose. A card appears on the page with the question and one button per option; this call does not return until he clicks one. Use this whenever his instruction is ambiguous rather than picking an interpretation yourself — units (monthly vs annual, percent vs absolute), which assumption he means, or which of several changes he wants. Asking is cheap and expected; guessing wrong wastes his time.",
+  inputSchema: {
+    type: 'object',
+    properties: {
+      question: {
+        type: 'string',
+        description: 'One short, specific question. Amogh reads this on the page.',
+      },
+      options: {
+        type: 'array',
+        items: { type: 'string' },
+        minItems: 2,
+        maxItems: 6,
+        description: 'Between 2 and 6 distinct answers, each short enough to fit on a button.',
+      },
+    },
+    required: ['question', 'options'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} ask_human called with no page actions available`);
+      throw new Error('The page is not ready to ask questions yet.');
+    }
+
+    const { question, options } = validateAskHumanInput(input);
+    console.log(`${LOG_PREFIX} ask_human -> waiting on "${question}" [${options.join(', ')}]`);
+
+    const answer = await actions.askHuman(question, options);
+    console.log(`${LOG_PREFIX} ask_human <- ${answer}`);
+    return { content: [{ type: 'text', text: formatAskHumanResult(answer) }] };
+  },
+};
+
+const TOOLS: ToolDefinition[] = [GET_MODEL_STATE, PROPOSE_EDIT, ASK_HUMAN];
 
 /**
  * Registers the WebMCP tools once. Returns false when the browser exposes no
