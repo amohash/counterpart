@@ -159,3 +159,14 @@ separate slug); agentColor comes from a fixed 6-color palette assigned in
 first-seen order via a module-level Map in proposal.ts (getAgentColor).
 Gotchas: none.
 Next: Phase 12
+
+## Phase 12 — DONE (2026-08-29)
+Files created/changed: src/hooks/useCrossTabSync.ts, src/hooks/useModelState.ts,
+src/hooks/useProposals.ts, src/App.tsx, src/proposal.ts, src/proposal.test.ts.
+Done Check result: accepted a 15% monthly churn proposal in tab A; tab B updated
+within one second without reload. 38 tests green, source lint and build clean.
+Decisions worth remembering: combined model + proposal snapshots use
+BroadcastChannel("counterpart"), with localStorage storage-event fallback;
+new tabs request current state, last-write-wins, and received ids advance nextId.
+Gotchas: browser automation unavailable; Amogh completed the two-tab check.
+Next: Phase 13

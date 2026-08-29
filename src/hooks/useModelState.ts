@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { computeModel, DEFAULT_ASSUMPTIONS, type Assumptions, type ModelOutput } from '../model';
 
 const STORAGE_KEY = 'counterpart-assumptions';
@@ -19,6 +19,7 @@ interface UseModelStateResult {
   assumptions: Assumptions;
   output: ModelOutput;
   setAssumption: (key: keyof Assumptions, value: number) => void;
+  replaceAssumptions: (next: Assumptions) => void;
   reset: () => void;
 }
 
@@ -32,10 +33,15 @@ export function useModelState(): UseModelStateResult {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   };
 
+  const replaceAssumptions = useCallback((next: Assumptions) => {
+    setAssumptions(next);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }, []);
+
   const reset = () => {
     setAssumptions(DEFAULT_ASSUMPTIONS);
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  return { assumptions, output, setAssumption, reset };
+  return { assumptions, output, setAssumption, replaceAssumptions, reset };
 }

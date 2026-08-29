@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { Assumptions } from '../model';
-import { createProposal, withStatus, type Proposal } from '../proposal';
+import { createProposal, observeProposalIds, withStatus, type Proposal } from '../proposal';
 
 interface UseProposalsResult {
   proposals: Proposal[];
@@ -11,6 +11,7 @@ interface UseProposalsResult {
     rationale: string,
     agentName: string,
   ) => Proposal;
+  replaceProposals: (next: Proposal[]) => void;
   accept: (id: string) => void;
   reject: (id: string) => void;
   acceptAll: () => void;
@@ -35,6 +36,11 @@ export function useProposals(
     return proposal;
   };
 
+  const replaceProposals = useCallback((next: Proposal[]) => {
+    observeProposalIds(next);
+    setProposals(next);
+  }, []);
+
   const accept = (id: string) => {
     const proposal = proposals.find((item) => item.id === id);
     if (!proposal) return;
@@ -57,5 +63,5 @@ export function useProposals(
       .forEach((proposal) => accept(proposal.id));
   };
 
-  return { proposals, pendingFor, addProposal, accept, reject, acceptAll };
+  return { proposals, pendingFor, addProposal, replaceProposals, accept, reject, acceptAll };
 }

@@ -50,3 +50,10 @@ export function createProposal(
 export function withStatus(proposal: Proposal, status: ProposalStatus): Proposal {
   return { ...proposal, status };
 }
+
+export function observeProposalIds(proposals: Proposal[]): void {
+  for (const proposal of proposals) {
+    const match = /^proposal-(\d+)$/.exec(proposal.id);
+    if (match) nextId = Math.max(nextId, Number(match[1]) + 1);
+  }
+}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { createProposal, withStatus } from './proposal';
+import { createProposal, observeProposalIds, withStatus } from './proposal';
 
 describe('proposal', () => {
   test('createProposal starts pending with given fields', () => {
@@ -26,5 +26,14 @@ describe('proposal', () => {
 
     expect(accepted.status).toBe('accepted');
     expect(proposal.status).toBe('pending');
+  });
+
+  test('received proposal ids advance the local id counter', () => {
+    const received = { ...createProposal('cac', 900, 'received', 'Growth'), id: 'proposal-100' };
+    observeProposalIds([received]);
+
+    const local = createProposal('cac', 800, 'local', 'Risk');
+
+    expect(local.id).toBe('proposal-101');
   });
 });
