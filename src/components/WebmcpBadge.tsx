@@ -1,3 +1,5 @@
+import { Unplug } from 'lucide-react';
+
 interface WebmcpBadgeProps {
   isDetected: boolean;
 }
@@ -6,7 +8,8 @@ export function WebmcpBadge({ isDetected }: WebmcpBadgeProps) {
   if (isDetected) return null;
 
   return (
-    <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-600">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e2e4df] px-3 py-1.5 text-xs font-semibold text-[#59645e]">
+      <Unplug aria-hidden="true" size={13} strokeWidth={2} />
       WebMCP not detected
     </span>
   );

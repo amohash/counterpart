@@ -1,4 +1,7 @@
+import { motion } from 'framer-motion';
+import { Check, CornerDownRight, X } from 'lucide-react';
 import type { Proposal } from '../proposal';
+import { AgentBadge } from './AgentBadge';
 
 interface ProposalHighlightProps {
   proposal: Proposal;
@@ -9,48 +12,55 @@ interface ProposalHighlightProps {
 
 export function ProposalHighlight({ proposal, oldValue, onAccept, onReject }: ProposalHighlightProps) {
   return (
-    <div className="animate-fade-in rounded border border-amber-400 bg-amber-50 p-2 text-xs">
-      <span
-        className="mb-1 inline-block rounded px-1.5 py-0.5 font-semibold text-white"
-        style={{ backgroundColor: proposal.agentColor }}
-      >
-        {proposal.agentId}
-      </span>
-      <p className="font-medium text-amber-800">
-        {oldValue} → {proposal.newValue}
-      </p>
-      <p className="mt-1 text-amber-700">{proposal.rationale}</p>
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: -8, filter: 'blur(3px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      className="overflow-hidden rounded-xl border border-[#dfbe78] bg-[#fffaf0] text-xs shadow-[0_7px_18px_rgba(107,75,19,0.10)]"
+    >
+      <div className="flex items-center justify-between gap-2 border-b border-[#ead7ad] px-3 py-2.5">
+        <AgentBadge name={proposal.agentId} color={proposal.agentColor} />
+        <p className="tabular-nums text-sm font-bold text-[#5f4517]">
+          {oldValue} <span className="px-1 text-[#a17a32]">→</span> {proposal.newValue}
+        </p>
+      </div>
+      <p className="px-3 py-2.5 leading-5 text-[#6b5327]">{proposal.rationale}</p>
       {proposal.rebuttals?.length > 0 && (
-        <div className="mt-2 space-y-2 border-l-2 border-amber-300 pl-2">
+        <div className="space-y-2 border-t border-[#ead7ad] bg-[#f5f2ea] px-3 py-2.5">
           {proposal.rebuttals.map((rebuttal, index) => (
-            <div key={`${rebuttal.agentId}-${index}`}>
-              <span
-                className="inline-block rounded px-1.5 py-0.5 font-semibold text-white"
-                style={{ backgroundColor: rebuttal.agentColor }}
-              >
-                {rebuttal.agentId}
-              </span>
-              <p className="mt-1 text-gray-700">{rebuttal.rationale}</p>
-            </div>
+            <motion.div
+              key={`${rebuttal.agentId}-${index}`}
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="grid grid-cols-[16px_1fr] gap-2"
+            >
+              <CornerDownRight aria-hidden="true" className="mt-1 text-[#8f968f]" size={14} />
+              <div>
+                <AgentBadge name={rebuttal.agentId} color={rebuttal.agentColor} />
+                <p className="mt-1.5 leading-5 text-[#4c5751]">{rebuttal.rationale}</p>
+              </div>
+            </motion.div>
           ))}
         </div>
       )}
-      <div className="mt-2 flex gap-2">
+      <div className="flex gap-2 border-t border-[#ead7ad] px-3 py-2.5">
         <button
           type="button"
           onClick={() => onAccept(proposal.id)}
-          className="rounded bg-amber-600 px-2 py-1 font-medium text-white hover:bg-amber-700"
+          className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#176f55] px-3 font-semibold text-white transition hover:bg-[#115e47] active:translate-y-px"
         >
+          <Check aria-hidden="true" size={14} strokeWidth={2.2} />
           Accept
         </button>
         <button
           type="button"
           onClick={() => onReject(proposal.id)}
-          className="rounded bg-gray-200 px-2 py-1 font-medium hover:bg-gray-300"
+          className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#e6e8e3] px-3 font-semibold text-[#3e4a44] transition hover:bg-[#daddd6] active:translate-y-px"
         >
+          <X aria-hidden="true" size={14} strokeWidth={2.2} />
           Reject
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }

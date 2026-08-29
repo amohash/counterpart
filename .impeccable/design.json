@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-29T23:51:44Z",
+  "title": "Design System: Counterpart",
+  "extensions": {
+    "colorMeta": {
+      "canvas": { "role": "neutral", "displayName": "Ledger Canvas", "canonical": "#f3f1eb", "tonalRamp": ["#242522", "#454640", "#686963", "#8c8d86", "#b0b1aa", "#d0d0ca", "#e6e5df", "#f3f1eb"] },
+      "surface": { "role": "neutral", "displayName": "Paper Surface", "canonical": "#f8f7f3", "tonalRamp": ["#262724", "#474844", "#6b6c67", "#90918b", "#b5b5af", "#d5d4ce", "#ebeae5", "#f8f7f3"] },
+      "ink": { "role": "primary", "displayName": "Workbench Ink", "canonical": "#17211d", "tonalRamp": ["#101713", "#17211d", "#304039", "#51625a", "#74857c", "#9aaba2", "#c4d1cb", "#edf4f1"] },
+      "emerald": { "role": "primary", "displayName": "Operator Emerald", "canonical": "#176f55", "tonalRamp": ["#08251c", "#0d3d2f", "#115e47", "#176f55", "#2e9271", "#68b397", "#a9d8c7", "#e7f2ed"] },
+      "amber": { "role": "secondary", "displayName": "Review Amber", "canonical": "#f3c878", "tonalRamp": ["#33250d", "#604718", "#8b6927", "#b78e3f", "#d9ad59", "#f3c878", "#f9dfaa", "#fff5dc"] },
+      "danger": { "role": "secondary", "displayName": "Decision Red", "canonical": "#a34832", "tonalRamp": ["#32130d", "#5a2419", "#7d3425", "#a34832", "#c56650", "#dd9484", "#edc3b9", "#faeee9"] }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Product title", "purpose": "Counterpart identity in the compact app header." },
+      "body": { "displayName": "Operational body", "purpose": "Model labels, rationale, tables, and working copy." },
+      "label": { "displayName": "Data label", "purpose": "Compact uppercase metric and cadence labels." }
+    },
+    "shadows": [
+      { "name": "surface-ambient", "value": "0 10px 26px rgba(23,33,29,0.09)", "purpose": "Primary work surfaces." },
+      { "name": "decision-lift", "value": "0 8px 18px rgba(23,111,85,0.18)", "purpose": "Human approval actions." },
+      { "name": "review-lift", "value": "0 7px 18px rgba(107,75,19,0.10)", "purpose": "Pending proposals." }
+    ],
+    "motion": [
+      { "name": "state-out", "value": "cubic-bezier(0.16, 1, 0.3, 1) 240ms", "purpose": "Proposal, rebuttal, question, and generated-chart state changes." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Human approval action with restrained lift.",
+      "html": "<button class=\"ds-btn-primary\">ACCEPT ALL</button>",
+      "css": ".ds-btn-primary{min-height:44px;border:0;border-radius:8px;padding:12px 20px;background:#176f55;color:#fff;font:600 14px 'Avenir Next',sans-serif;box-shadow:0 8px 18px rgba(23,111,85,.18);transition:background .2s,transform .2s}.ds-btn-primary:hover{background:#115e47}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:3px solid #f3f1eb;box-shadow:0 0 0 5px #147a5b}"
+    },
+    {
+      "name": "Model Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Right-aligned financial assumption field.",
+      "html": "<input class=\"ds-input\" value=\"240000\" aria-label=\"Monthly opex\">",
+      "css": ".ds-input{height:36px;width:128px;border:1px solid #cfd3cc;border-radius:8px;background:#fff;color:#17211d;padding:0 10px;text-align:right;font:600 14px 'Avenir Next',sans-serif;font-variant-numeric:tabular-nums}.ds-input:hover{border-color:#9ca69f}.ds-input:focus-visible{outline:3px solid #f3f1eb;box-shadow:0 0 0 5px #147a5b;border-color:#176f55}"
+    },
+    {
+      "name": "Agent Badge",
+      "kind": "chip",
+      "description": "Named and icon-backed agent identity marker.",
+      "html": "<span class=\"ds-agent\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 17l6-6 4 4 8-8M14 7h7v7\"/></svg>GROWTH</span>",
+      "css": ".ds-agent{display:inline-flex;align-items:center;gap:6px;border:1px solid #2563eb55;border-radius:6px;background:#fff;color:#2563eb;padding:4px 8px;font:700 10px 'Avenir Next',sans-serif;letter-spacing:.08em}.ds-agent svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}"
+    },
+    {
+      "name": "Metric Rail",
+      "kind": "custom",
+      "description": "Compact headline metrics in the workbench decision layer.",
+      "html": "<div class=\"ds-metric\"><span>ARR</span><strong>$1,579,767</strong></div>",
+      "css": ".ds-metric{display:grid;gap:3px;border-radius:12px;background:#17211d;color:#f7f8f5;padding:12px 16px;box-shadow:0 10px 26px rgba(23,33,29,.15)}.ds-metric span{color:#aebbb4;font:600 10px 'Avenir Next',sans-serif;letter-spacing:.12em}.ds-metric strong{font:600 18px 'Avenir Next',sans-serif;font-variant-numeric:tabular-nums}"
+    },
+    {
+      "name": "Proposal Card",
+      "kind": "card",
+      "description": "Amber review surface for a pending agent change.",
+      "html": "<article class=\"ds-proposal\"><strong>15 → 8</strong><p>Lower churn to match the retention plan.</p></article>",
+      "css": ".ds-proposal{border:1px solid #dfbe78;border-radius:12px;background:#fffaf0;color:#6b5327;padding:12px;box-shadow:0 7px 18px rgba(107,75,19,.1);font:400 12px/1.6 'Avenir Next',sans-serif}.ds-proposal strong{display:block;color:#5f4517;font-size:14px;font-variant-numeric:tabular-nums}.ds-proposal:focus-within{outline:3px solid #f3f1eb;box-shadow:0 0 0 5px #147a5b}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Analyst's Workbench",
+    "overview": "Counterpart is a focused instrument for consequential operating reviews: calm, dense, exact, and quietly tactile. Warm paper surfaces support long financial sessions while near-black green structure and restrained semantic color preserve authority.",
+    "keyCharacteristics": ["Warm paper canvas with precise dark-ink contrast", "Compact operational density and strong numeric alignment", "Emerald reserved for human action and focus", "Amber reserved for proposals and runway pressure", "Motion limited to meaningful state transitions"],
+    "rules": [
+      { "name": "Semantic Rarity", "body": "Emerald, amber, and red communicate meaning; do not spread them across decorative surfaces.", "section": "colors" },
+      { "name": "Numeric Stability", "body": "All changing financial values and model inputs use tabular numerals.", "section": "typography" },
+      { "name": "Flat-Within", "body": "Use one lifted outer surface, then rules and tone—not nested shadows—to organize its contents.", "section": "elevation" }
+    ],
+    "dos": ["Do preserve the warm paper, dark workbench, and scarce semantic accent hierarchy.", "Do use Lucide icons only when they clarify role or action.", "Do keep financial data dense, aligned, and fully available at every viewport.", "Do animate proposals, rebuttals, generated charts, and agent questions as state changes with reduced-motion support."],
+    "donts": ["Don't introduce purple gradients, glassmorphism, italic serif headings, or generic SaaS-dashboard chrome.", "Don't turn every data group into an equal card or add decorative metric tiles.", "Don't use color alone for agent identity, proposal state, or financial outcomes.", "Don't add motion to static sections merely to advertise polish."]
+  }
+}

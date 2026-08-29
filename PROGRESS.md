@@ -180,3 +180,14 @@ Decisions worth remembering: rebuttals are nested in proposals, so Phase 12 sync
 threads; get_model_state exposes proposal/rebuttal authors for cross-agent context.
 Gotchas: none. 41 tests green; source lint and production build pass.
 Next: Phase 14
+
+## Phase 14 — DONE (2026-08-29)
+Files created/changed: PRODUCT.md, DESIGN.md, .impeccable/*, package*.json,
+src/{App,index.css}.tsx/css, src/components/{AgentBadge,AssumptionsPanel,ExtraChart,
+Headline,MrrChart,ProjectionTable,ProposalHighlight,QuestionCard,WebmcpBadge}.tsx.
+Done Check result: Impeccable audit zero findings; desktop/mobile visual QA, Phase 13
+Growth→Risk→accept regression, 41 tests, source lint, build, and clean console passed.
+Decisions worth remembering: “Analyst's Workbench” direction; warm paper, workbench
+ink, emerald human actions, amber review states; Framer Motion + Lucide added.
+Gotchas: dependency install during Vite HMR caused a transient hook error; restart fixed it.
+Next: Phase 15

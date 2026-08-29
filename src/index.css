@@ -1,16 +1,68 @@
 @import "tailwindcss";
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+:root {
+  color: #17211d;
+  background: #f3f1eb;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out;
+* {
+  scrollbar-color: #526059 #e8e6df;
+  scrollbar-width: thin;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: #f3f1eb;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+input,
+[tabindex] {
+  outline: none;
+}
+
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  box-shadow: 0 0 0 3px #f3f1eb, 0 0 0 5px #176f55;
+}
+
+::selection {
+  color: #f7faf8;
+  background: #176f55;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e8e6df;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid #e8e6df;
+  border-radius: 999px;
+  background: #526059;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

@@ -1,3 +1,5 @@
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
+import { CheckCheck, MessageSquareText, Network } from 'lucide-react';
 import { AssumptionsPanel } from './components/AssumptionsPanel';
 import { ExtraChart } from './components/ExtraChart';
 import { Headline } from './components/Headline';
@@ -44,56 +46,90 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <h1 className="text-4xl font-bold">Counterpart</h1>
-        <WebmcpBadge isDetected={isWebmcpDetected} />
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="min-h-screen bg-[#f3f1eb] text-[#17211d]">
+        <header className="border-b border-[#d5d6d0] bg-[#f8f7f3]">
+          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-3">
+              <span className="grid size-9 place-items-center rounded-lg bg-[#17211d] text-[#f8f7f3] shadow-[0_6px_18px_rgba(23,33,29,0.18)]">
+                <Network aria-hidden="true" size={18} strokeWidth={1.8} />
+              </span>
+              <h1 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl">Counterpart</h1>
+            </div>
+            <WebmcpBadge isDetected={isWebmcpDetected} />
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+          <AnimatePresence mode="popLayout">
+            {currentQuestion && (
+              <div className="mb-5">
+                <QuestionCard question={currentQuestion} onAnswer={answer} />
+              </div>
+            )}
+          </AnimatePresence>
+          {proposals.length === 0 && charts.length === 0 && Object.keys(annotations).length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-5 flex gap-3 rounded-xl border border-dashed border-[#aeb4ae] bg-[#f8f7f3] p-4 text-sm text-[#4f5d56]"
+            >
+              <MessageSquareText aria-hidden="true" className="mt-0.5 shrink-0 text-[#176f55]" size={18} />
+              <div>
+                <p className="font-semibold text-[#25312b]">Try asking the agent something:</p>
+                <ul className="mt-1.5 space-y-1 text-xs leading-5">
+                  <li>“Raise churn to 15% and tell me what happens to runway”</li>
+                  <li>“Compare 3%, 8%, and 15% churn, chart cumulative cash, and flag the risky one”</li>
+                  <li>“Annotate CAC with a note about our last fundraise”</li>
+                </ul>
+              </div>
+            </motion.div>
+          )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+            <div className="min-w-0 flex-1">
+              <Headline output={output} />
+            </div>
+            <button
+              type="button"
+              onClick={acceptAll}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#176f55] px-5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(23,111,85,0.18)] transition hover:bg-[#115e47] active:translate-y-px"
+            >
+              <CheckCheck aria-hidden="true" size={17} strokeWidth={2} />
+              Accept all
+            </button>
+          </div>
+          <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+            <AssumptionsPanel
+              assumptions={assumptions}
+              onChange={setAssumption}
+              onReset={reset}
+              pendingFor={pendingFor}
+              onAcceptProposal={accept}
+              onRejectProposal={reject}
+              annotations={annotations}
+              highlightedIds={highlightedIds}
+            />
+            <div className="flex min-w-0 flex-col gap-5">
+              <MrrChart rows={output.rows} />
+              <ProjectionTable rows={output.rows} />
+              <AnimatePresence initial={false}>
+                {charts.map((chart) => (
+                  <motion.div
+                    key={chart.id}
+                    layout
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                  >
+                    <ExtraChart rows={output.rows} seriesIds={chart.seriesIds} title={chart.title} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </main>
       </div>
-      {currentQuestion && (
-        <div className="mb-6">
-          <QuestionCard question={currentQuestion} onAnswer={answer} />
-        </div>
-      )}
-      {proposals.length === 0 && charts.length === 0 && Object.keys(annotations).length === 0 && (
-        <div className="mb-6 rounded border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-600">
-          <p className="font-medium text-gray-800">Try asking the agent something, e.g.:</p>
-          <ul className="mt-2 list-inside list-disc space-y-1">
-            <li>"Raise churn to 15% and tell me what happens to runway"</li>
-            <li>"Compare 3%, 8%, and 15% churn, chart cumulative cash, and flag the risky one"</li>
-            <li>"Annotate CAC with a note about our last fundraise"</li>
-          </ul>
-        </div>
-      )}
-      <Headline output={output} />
-      <div className="mt-6 flex gap-3">
-        <button
-          type="button"
-          onClick={acceptAll}
-          className="rounded bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-        >
-          Accept all
-        </button>
-      </div>
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
-        <AssumptionsPanel
-          assumptions={assumptions}
-          onChange={setAssumption}
-          onReset={reset}
-          pendingFor={pendingFor}
-          onAcceptProposal={accept}
-          onRejectProposal={reject}
-          annotations={annotations}
-          highlightedIds={highlightedIds}
-        />
-        <div className="flex flex-col gap-6">
-          <MrrChart rows={output.rows} />
-          <ProjectionTable rows={output.rows} />
-          {charts.map((chart) => (
-            <ExtraChart key={chart.id} rows={output.rows} seriesIds={chart.seriesIds} title={chart.title} />
-          ))}
-        </div>
-      </div>
-    </div>
+    </MotionConfig>
   );
 }
 
