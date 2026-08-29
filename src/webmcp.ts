@@ -30,6 +30,7 @@ export interface ModelActions {
     rationale: string,
     agentName: string,
   ) => Proposal;
+  rebutProposal: (proposalId: string, agentName: string, rationale: string) => void;
   /** Resolves only once Amogh clicks one of the options. Never rejects, never times out. */
   askHuman: (question: string, options: string[]) => Promise<string>;
   annotate: (targetId: keyof Assumptions, text: string) => void;
@@ -112,6 +113,11 @@ export function compactJson(snapshot: ModelSnapshot): string {
         oldValue: assumptions[proposal.targetId],
         newValue: proposal.newValue,
         rationale: proposal.rationale,
+        agentName: proposal.agentId,
+        rebuttals: (proposal.rebuttals ?? []).map((rebuttal) => ({
+          agentName: rebuttal.agentId,
+          rationale: rebuttal.rationale,
+        })),
       })),
   };
 
@@ -222,6 +228,75 @@ const PROPOSE_EDIT: ToolDefinition = {
 
     const text = formatProposeEditResult(targetId, oldValue, newValue);
     console.log(`${LOG_PREFIX} propose_edit -> ${proposal.id} ${text}`);
+    return { content: [{ type: 'text', text }] };
+  },
+};
+
+export interface RebutProposalInput {
+  proposalId: string;
+  agentName: string;
+  rationale: string;
+}
+
+export function validateRebutProposalInput(input: unknown): RebutProposalInput {
+  const raw = (input ?? {}) as Record<string, unknown>;
+  const proposalId = typeof raw.proposalId === 'string' ? raw.proposalId.trim() : '';
+  if (!proposalId) {
+    throw new Error('proposalId is required — use an id returned by get_model_state.');
+  }
+
+  const agentName = typeof raw.agentName === 'string' ? raw.agentName.trim() : '';
+  if (!agentName) {
+    throw new Error('agentName is required — which agent is making this rebuttal.');
+  }
+
+  const rationale = typeof raw.rationale === 'string' ? raw.rationale.trim() : '';
+  if (!rationale) {
+    throw new Error('rationale is required — explain the counterargument.');
+  }
+
+  return { proposalId, agentName, rationale };
+}
+
+const REBUT_PROPOSAL: ToolDefinition = {
+  name: 'rebut_proposal',
+  description:
+    'Adds a counterargument beneath an existing proposal without accepting, rejecting, or changing it. Call get_model_state first to find the pending proposal id and read the proposal and any existing rebuttals.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      proposalId: {
+        type: 'string',
+        description: 'The id of the proposal to rebut, from get_model_state.',
+      },
+      agentName: {
+        type: 'string',
+        description: 'Which agent is rebutting, e.g. "Growth" or "Risk".',
+      },
+      rationale: {
+        type: 'string',
+        description: 'One short sentence stating the counterargument.',
+      },
+    },
+    required: ['proposalId', 'agentName', 'rationale'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} rebut_proposal called with no page actions available`);
+      throw new Error('The page is not ready to accept rebuttals yet.');
+    }
+
+    const { proposalId, agentName, rationale } = validateRebutProposalInput(input);
+    const proposal = actions.getSnapshot().proposals.find((item) => item.id === proposalId);
+    if (!proposal) {
+      throw new Error(`Unknown proposalId ${JSON.stringify(proposalId)}. Call get_model_state again.`);
+    }
+
+    actions.rebutProposal(proposalId, agentName, rationale);
+    const text = `Added ${agentName}'s rebuttal to ${proposalId}. Its status is still ${proposal.status}.`;
+    console.log(`${LOG_PREFIX} rebut_proposal -> ${text}`);
     return { content: [{ type: 'text', text }] };
   },
 };
@@ -523,6 +598,7 @@ const HIGHLIGHT: ToolDefinition = {
 const TOOLS: ToolDefinition[] = [
   GET_MODEL_STATE,
   PROPOSE_EDIT,
+  REBUT_PROPOSAL,
   ASK_HUMAN,
   RUN_SCENARIO,
   ANNOTATE,

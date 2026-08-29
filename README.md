@@ -18,12 +18,13 @@ running in *this tab*, against *this user's* live state. Counterpart uses that
 to invert the usual arrangement: the agent gets rich read access and zero write
 access.
 
-Seven tools are registered on `document.modelContext`:
+Eight tools are registered on `document.modelContext`:
 
 | Tool | What it does |
 |---|---|
 | `get_model_state` | Reads assumptions, 24-month projections, headline metrics, pending proposals |
 | `propose_edit` | Creates a **pending** proposal — does not apply it, does not recompute |
+| `rebut_proposal` | Adds an attributed counterargument beneath a proposal without changing its status |
 | `ask_human` | Blocks the agent until the human clicks an answer on the page |
 | `run_scenario` | Computes with temporary overrides; changes nothing on screen |
 | `annotate` | Pins a note next to an assumption |
@@ -94,6 +95,22 @@ Every tool call logs with a `[webmcp]` prefix. `document.modelContext` is
 feature-detected — if it is missing the app renders a badge instead of crashing,
 and retries detection once a second since some browsers inject the API late.
 
+### Run the Growth and Risk agents together
+
+Open the same Counterpart URL in two tabs. In one ChatGPT session, say:
+
+> You are the Growth agent: optimistic, argues for spending and expansion. Use
+> the page tools, set `agentName` to `Growth`, and propose edits that support growth.
+
+In the other ChatGPT session, say:
+
+> You are the Risk agent: cautious, argues for runway and caution. Use the page
+> tools, set `agentName` to `Risk`, and rebut risky pending proposals.
+
+The tabs synchronize the model, proposal queue, and rebuttal threads through
+`BroadcastChannel`, with localStorage events as a fallback. Both agents can see
+the same pending debate, while only the human can accept or reject a proposal.
+
 ## Local setup
 
 ```bash
@@ -101,7 +118,7 @@ git clone https://github.com/amohash/counterpart.git
 cd counterpart
 npm install
 npm run dev     # http://localhost:5173
-npm test        # 37 tests
+npm test        # 41 tests
 npm run build
 ```
 

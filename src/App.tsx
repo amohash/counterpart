@@ -16,8 +16,16 @@ import { useWebmcp } from './hooks/useWebmcp';
 
 function App() {
   const { assumptions, output, setAssumption, replaceAssumptions, reset } = useModelState();
-  const { proposals, pendingFor, addProposal, replaceProposals, accept, reject, acceptAll } =
-    useProposals(setAssumption);
+  const {
+    proposals,
+    pendingFor,
+    addProposal,
+    replaceProposals,
+    addRebuttal,
+    accept,
+    reject,
+    acceptAll,
+  } = useProposals(setAssumption);
   useCrossTabSync({ assumptions, proposals, replaceAssumptions, replaceProposals });
   const { currentQuestion, askHuman, answer } = useQuestions();
   const { annotations, addAnnotation } = useAnnotations();
@@ -27,6 +35,7 @@ function App() {
     { assumptions, output, proposals },
     {
       proposeEdit: addProposal,
+      rebutProposal: addRebuttal,
       askHuman,
       annotate: addAnnotation,
       addChart,

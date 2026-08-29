@@ -7,6 +7,7 @@ import {
   validateAnnotateInput,
   validateHighlightInput,
   validateProposeEditInput,
+  validateRebutProposalInput,
   validateRunScenarioInput,
 } from './webmcp';
 
@@ -71,6 +72,34 @@ describe('validateProposeEditInput', () => {
 
     // Act + Assert
     expect(() => validateProposeEditInput(input)).toThrow(/rationale is required/);
+  });
+});
+
+describe('validateRebutProposalInput', () => {
+  test('accepts a valid rebuttal and trims its strings', () => {
+    expect(
+      validateRebutProposalInput({
+        proposalId: ' proposal-1 ',
+        agentName: ' Risk ',
+        rationale: ' Runway falls too quickly. ',
+      }),
+    ).toEqual({
+      proposalId: 'proposal-1',
+      agentName: 'Risk',
+      rationale: 'Runway falls too quickly.',
+    });
+  });
+
+  test('requires a proposal id, agent name, and rationale', () => {
+    expect(() => validateRebutProposalInput({ agentName: 'Risk', rationale: 'Why' })).toThrow(
+      /proposalId is required/,
+    );
+    expect(() => validateRebutProposalInput({ proposalId: 'proposal-1', rationale: 'Why' })).toThrow(
+      /agentName is required/,
+    );
+    expect(() => validateRebutProposalInput({ proposalId: 'proposal-1', agentName: 'Risk' })).toThrow(
+      /rationale is required/,
+    );
   });
 });
 

@@ -20,6 +20,21 @@ export function ProposalHighlight({ proposal, oldValue, onAccept, onReject }: Pr
         {oldValue} → {proposal.newValue}
       </p>
       <p className="mt-1 text-amber-700">{proposal.rationale}</p>
+      {proposal.rebuttals?.length > 0 && (
+        <div className="mt-2 space-y-2 border-l-2 border-amber-300 pl-2">
+          {proposal.rebuttals.map((rebuttal, index) => (
+            <div key={`${rebuttal.agentId}-${index}`}>
+              <span
+                className="inline-block rounded px-1.5 py-0.5 font-semibold text-white"
+                style={{ backgroundColor: rebuttal.agentColor }}
+              >
+                {rebuttal.agentId}
+              </span>
+              <p className="mt-1 text-gray-700">{rebuttal.rationale}</p>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="mt-2 flex gap-2">
         <button
           type="button"

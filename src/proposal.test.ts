@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { createProposal, observeProposalIds, withStatus } from './proposal';
+import { createProposal, observeProposalIds, withRebuttal, withStatus } from './proposal';
 
 describe('proposal', () => {
   test('createProposal starts pending with given fields', () => {
@@ -11,6 +11,18 @@ describe('proposal', () => {
     expect(proposal.rationale).toBe('test rationale');
     expect(proposal.agentId).toBe('Growth');
     expect(proposal.agentColor).toBeTruthy();
+    expect(proposal.rebuttals).toEqual([]);
+  });
+
+  test('withRebuttal appends an attributed counter-note without changing status', () => {
+    const proposal = createProposal('monthlyOpex', 100000, 'Invest for growth', 'Growth');
+    const rebutted = withRebuttal(proposal, 'Risk', 'This shortens runway.');
+
+    expect(rebutted.status).toBe('pending');
+    expect(rebutted.rebuttals).toEqual([
+      expect.objectContaining({ agentId: 'Risk', rationale: 'This shortens runway.' }),
+    ]);
+    expect(proposal.rebuttals).toEqual([]);
   });
 
   test('createProposal assigns unique ids', () => {

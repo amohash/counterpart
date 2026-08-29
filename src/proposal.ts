@@ -2,6 +2,12 @@ import type { Assumptions } from './model';
 
 export type ProposalStatus = 'pending' | 'accepted' | 'rejected';
 
+export interface Rebuttal {
+  agentId: string;
+  agentColor: string;
+  rationale: string;
+}
+
 export interface Proposal {
   id: string;
   targetId: keyof Assumptions;
@@ -10,6 +16,7 @@ export interface Proposal {
   status: ProposalStatus;
   agentId: string;
   agentColor: string;
+  rebuttals: Rebuttal[];
 }
 
 let nextId = 1;
@@ -44,6 +51,21 @@ export function createProposal(
     status: 'pending',
     agentId: agentName,
     agentColor: getAgentColor(agentName),
+    rebuttals: [],
+  };
+}
+
+export function withRebuttal(
+  proposal: Proposal,
+  agentName: string,
+  rationale: string,
+): Proposal {
+  return {
+    ...proposal,
+    rebuttals: [
+      ...(proposal.rebuttals ?? []),
+      { agentId: agentName, agentColor: getAgentColor(agentName), rationale },
+    ],
   };
 }
 

@@ -170,3 +170,13 @@ BroadcastChannel("counterpart"), with localStorage storage-event fallback;
 new tabs request current state, last-write-wins, and received ids advance nextId.
 Gotchas: browser automation unavailable; Amogh completed the two-tab check.
 Next: Phase 13
+
+## Phase 13 — DONE (2026-08-29)
+Files created/changed: README.md, src/{App,proposal,proposal.test,webmcp,webmcp.test}.ts(x),
+src/hooks/{useProposals,useWebmcp}.ts, src/components/ProposalHighlight.tsx.
+Done Check result: Growth proposed higher opex, Risk rebutted on runway, both arguments
+rendered on one card, and the decision synced; passed in Chrome and ChatGPT in-app browser.
+Decisions worth remembering: rebuttals are nested in proposals, so Phase 12 sync carries
+threads; get_model_state exposes proposal/rebuttal authors for cross-agent context.
+Gotchas: none. 41 tests green; source lint and production build pass.
+Next: Phase 14

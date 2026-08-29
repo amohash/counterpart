@@ -25,6 +25,8 @@ export function useWebmcp(snapshot: ModelSnapshot, actions: WebmcpActions): bool
       getSnapshot: () => snapshotRef.current,
       proposeEdit: (targetId, newValue, rationale, agentName) =>
         actionsRef.current.proposeEdit(targetId, newValue, rationale, agentName),
+      rebutProposal: (proposalId, agentName, rationale) =>
+        actionsRef.current.rebutProposal(proposalId, agentName, rationale),
       askHuman: (question, options) => actionsRef.current.askHuman(question, options),
       annotate: (targetId, text) => actionsRef.current.annotate(targetId, text),
       addChart: (seriesIds, title) => actionsRef.current.addChart(seriesIds, title),
