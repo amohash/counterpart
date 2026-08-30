@@ -191,3 +191,11 @@ Decisions worth remembering: “Analyst's Workbench” direction; warm paper, wo
 ink, emerald human actions, amber review states; Framer Motion + Lucide added.
 Gotchas: dependency install during Vite HMR caused a transient hook error; restart fixed it.
 Next: Phase 15
+
+## Phase 15 — DONE (2026-08-29)
+Files created/changed: middleware.ts, PROGRESS.md; Vercel production secret configured.
+Done Check result: live URL returns 401 without Basic Auth and 200 with it; build passes.
+Decisions worth remembering: Basic Auth username is `counterpart`; passcode lives only in
+Vercel's encrypted `COUNTERPART_PASSCODE` production variable; deleting middleware removes gate.
+Gotchas: local Vercel CLI had no credentials, so the secret was configured in Vercel's dashboard.
+Next: Phase 16
