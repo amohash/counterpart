@@ -208,3 +208,31 @@ Decisions worth remembering: demo centerpiece is Growth proposes → Risk rebuts
 human accepts; README tells judges to use username `counterpart` plus submitted passcode.
 Gotchas: README said seven registered tools although its table listed eight; corrected to eight.
 Next: submission
+
+
+# PROGRESS.md handling note
+
+The existing `PROGRESS.md` is the authoritative chronological history through Phase 16.
+
+Future Claude Code and Codex sessions must:
+- preserve every existing entry;
+- append exactly one new block after each completed Phase;
+- update `AGENTS.md` during the same handoff;
+- update `CLAUDE.md` during the same handoff;
+- never rewrite earlier historical entries;
+- use the exact Phase number completed;
+- record files changed, verification, durable decisions, gotchas, and next Phase.
+
+Do not replace the existing progress history with a summary.
+
+## Phase 17 — DONE (2026-08-31)
+Files created/changed: HACKATHON.md, AGENTS.md, PROGRESS.md.
+Done Check result: official Devpost/OpenAI rules audited; every known requirement is
+PASS or NEEDS ACTION; 41 tests, build, lint, repository/license API checks, deployment
+status checks, and targeted secret scans completed; no product behavior changed.
+Decisions worth remembering: repository and MIT license are public/detectable; remaining
+external actions are the public <3-minute YouTube video, Devpost fields/credentials, and
+continued judge access; avoid the default Vite favicon in the final recording.
+Gotchas: full lint traverses vendored agent-skill bundles and emits warnings but exits 0;
+authenticated production access was historically verified in Phase 15, not re-tested here.
+Next: Phase 18
