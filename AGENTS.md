@@ -110,6 +110,12 @@ Existing tools:
 
 Do not remove existing tools.
 
+Phase 18 audit coverage: the WebMCP test suite captures all eight registered
+tools and executes their meaningful paths against live-style actions. Keep this
+registration audit current when changing a tool name, schema, action, or output.
+`rebut_proposal` accepts only locally generated `proposal-<positive integer>` ids
+before resolving the proposal from live state.
+
 Do not add a tool merely to increase the tool count.
 
 A WebMCP tool should represent a meaningful capability an agent can use.

@@ -236,3 +236,10 @@ continued judge access; avoid the default Vite favicon in the final recording.
 Gotchas: full lint traverses vendored agent-skill bundles and emits warnings but exits 0;
 authenticated production access was historically verified in Phase 15, not re-tested here.
 Next: Phase 18
+
+## Phase 18 — DONE (2026-08-31)
+Files created/changed: src/webmcp.ts, src/webmcp.test.ts, CLAUDE.md, AGENTS.md, PROGRESS.md.
+Done Check result: all eight tools are registered and executed in the test suite against live-style React actions; invalid rebuttal ids fail before lookup; tests and production build pass.
+Decisions worth remembering: registration audit must remain in sync with the complete tool list; proposals are still created only through pending approval and never mutate assumptions during a tool call.
+Gotchas: this phase's browser-independent audit verifies registration and execution mechanics; live Chrome/ChatGPT tool testing remains a final QA activity.
+Next: Phase 19

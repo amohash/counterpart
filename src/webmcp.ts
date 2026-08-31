@@ -238,11 +238,18 @@ export interface RebutProposalInput {
   rationale: string;
 }
 
+/** Proposal ids are generated locally as `proposal-<positive integer>`.
+ * Validate the format before looking up live state so malformed agent input
+ * fails clearly instead of behaving like an arbitrary missing identifier. */
+export function isProposalId(value: string): boolean {
+  return /^proposal-[1-9]\d*$/.test(value);
+}
+
 export function validateRebutProposalInput(input: unknown): RebutProposalInput {
   const raw = (input ?? {}) as Record<string, unknown>;
   const proposalId = typeof raw.proposalId === 'string' ? raw.proposalId.trim() : '';
-  if (!proposalId) {
-    throw new Error('proposalId is required — use an id returned by get_model_state.');
+  if (!isProposalId(proposalId)) {
+    throw new Error('proposalId must be a valid id returned by get_model_state, e.g. proposal-1.');
   }
 
   const agentName = typeof raw.agentName === 'string' ? raw.agentName.trim() : '';
