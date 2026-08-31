@@ -199,3 +199,12 @@ Decisions worth remembering: Basic Auth username is `counterpart`; passcode live
 Vercel's encrypted `COUNTERPART_PASSCODE` production variable; deleting middleware removes gate.
 Gotchas: local Vercel CLI had no credentials, so the secret was configured in Vercel's dashboard.
 Next: Phase 16
+
+## Phase 16 — DONE (2026-08-31)
+Files created/changed: README.md, DEMO_SCRIPT.md, PROGRESS.md.
+Done Check result: README retains all seven Phase 10 H2 headings and now covers two
+opposing agents/rebuttals; demo narration is 311 words (~2m24s at 130 wpm).
+Decisions worth remembering: demo centerpiece is Growth proposes → Risk rebuts →
+human accepts; README tells judges to use username `counterpart` plus submitted passcode.
+Gotchas: README said seven registered tools although its table listed eight; corrected to eight.
+Next: submission

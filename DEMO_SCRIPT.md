@@ -1,4 +1,4 @@
-# Demo script — Counterpart (2m45s)
+# Demo script — Counterpart (2m40s)
 
 Word-for-word narration. Timestamps are cues, not hard cuts.
 Record in Chrome with `chrome://flags/#enable-webmcp-testing` enabled and the
@@ -8,111 +8,81 @@ Model Context Tool Inspector extension open beside the page.
 
 ## 0:00 — Pitch and canvas
 
-> "This is Counterpart. It's a live financial model that I edit with an AI agent
-> — except the agent can't change a single number. It can only ask, and propose."
+> "This is Counterpart: a live financial model where two AI agents disagree in
+> public, and I make the decision. Neither agent can change a single number."
 
 *Show the full page. Cursor across the assumptions on the left, the 24-month
-projection and MRR chart on the right, the ARR, LTV over CAC and runway figures
-along the top. Click into churn, type a value, click away — the chart redraws
-instantly. That's me editing. Now the agent.*
+projection, MRR chart, and headline metrics. Keep two agent sessions beside it:
+Growth and Risk, both on the same URL.*
 
-## 0:20 — The prompt
+## 0:18 — Growth proposes
 
-> "So let's give it something ambiguous on purpose."
+*In the Growth session, type:*
 
-*Type into the agent:*
+> **"You are the Growth agent. Review the model and propose raising monthly
+> operating expenses to accelerate expansion. Use agentName Growth."**
 
-> **"Model this at 15% churn and tell me if we run out of money."**
+*Let it call `get_model_state`, then `propose_edit`. A Growth-tagged amber card
+appears showing the old and proposed values.*
 
-*Let it call `get_model_state` first. Point at the console — every tool call
-logs with a `webmcp` prefix.*
+> "Growth reads the live model through WebMCP and makes its case on the canvas.
+> This is a proposal, not a mutation: ARR, runway, and the chart have not moved."
 
-## 0:30 — The agent asks me a question
+## 0:48 — Risk rebuts
 
-*A card appears at the top of the page: "Is that 15% monthly or annual?" with
-two buttons.*
+*Switch to the Risk session. Type:*
 
-> "Here's the part that wasn't possible before. The agent hit an ambiguity —
-> fifteen percent churn could be monthly or annual, and those are wildly
-> different companies — so instead of guessing, it called `ask_human`. That tool
-> returns a promise that only resolves when I click. There's no timeout. It is
-> sitting there, blocked, waiting for me."
+> **"You are the Risk agent. Review Growth's pending proposal, assess runway,
+> and rebut it on the proposal card. Use agentName Risk."**
 
-*Click **monthly**.*
+*Risk calls `get_model_state`, sees Growth's proposal, and calls
+`rebut_proposal`. Point to the Risk-tagged counterargument beneath Growth's
+case.*
 
-> "A web page just made an agent stop and wait for a human. That's the whole
-> idea."
+> "Risk sees the exact same pending proposal in its synchronized tab and argues
+> against it without changing its status. The disagreement is attached to the
+> decision, not buried in two chat transcripts."
 
-## 0:50 — Proposals appear; reject one, accept the rest
+## 1:18 — Human arbitration
 
-*Amber highlights appear on the assumptions, each showing old → new with a
-one-line rationale.*
+*Point to Growth's rationale, Risk's rebuttal, and the unchanged runway metric.*
 
-> "It's come back with proposals, not changes. Churn three to fifteen. And it
-> wants to raise CAC too, because it reckons the churn implies a worse
-> acquisition mix."
+> "Both agents have incentives and identities. Neither gets the final word. I
+> can compare the upside with the runway warning while the original model stays
+> untouched."
 
-*Point at the headline numbers.*
+*Click **Accept** on Growth's proposal. The assumption, projection, chart, and
+runway update in both tabs.*
 
-> "Look at the top — ARR, runway, LTV over CAC. Nothing has moved. Pending
-> proposals don't touch the math."
+> "I accept it. Only now does the model move, and both agents see my decision
+> within a second. If Risk had convinced me, Reject would have preserved the
+> original model. The human is the sole writer and arbiter."
 
-*Click reject on the CAC proposal.*
+## 1:48 — Ask, analyze, and explain
 
-> "I don't buy that one. Rejected."
+*In either agent session, type:*
 
-*Click accept on churn.*
+> **"Compare three runway scenarios, chart cumulative cash, and flag the risky
+> one. Ask me if any assumption is ambiguous."**
 
-> "This one I do."
+*Let `run_scenario`, `add_chart`, `annotate`, and `highlight` fire. If the agent
+asks a question, answer its card on the page.*
 
-*The chart bends down; runway drops.*
+> "The agents can calculate temporary scenarios, add a chart, annotate the
+> model, highlight risk, or pause on an on-page question. Those tools enrich the
+> shared workspace; none bypass approval. Every call logs with a `webmcp`
+> prefix."
 
-> "And now the numbers move. Every change on this page has an author, and it's
-> me."
+## 2:15 — The code and close
 
-## 1:30 — Scenarios, chart, annotation
+*Cut to `src/webmcp.ts`, then scroll from `get_model_state` to `propose_edit`
+and `rebut_proposal`.*
 
-> "Now let it work at full width."
+> "Eight tools register on `document.modelContext`. `propose_edit` queues a
+> request. `rebut_proposal` attaches an argument. The guarantee lives in the
+> tool layer: neither path can mutate an assumption."
 
-*Type:*
-
-> **"Compare 3, 8 and 15 percent churn, chart cumulative cash, and flag the
-> risky one."**
-
-*Watch the inspector as the tools fire.*
-
-> "`run_scenario` three times — that computes with temporary overrides and
-> returns the headline metrics without touching anything on screen. Then
-> `add_chart` drops a cumulative cash chart in below the first one. Then
-> `annotate` pins a note next to churn, and `highlight` flashes the row it's
-> worried about."
-
-*The highlight flashes for two seconds.*
-
-> "Four tools, one sentence, and the page is still mine."
-
-## 2:10 — The code
-
-*Cut to `src/webmcp.ts`, the `registerTool` call for `get_model_state`.*
-
-> "This is all it takes. `document.modelContext.registerTool` — a name, a
-> description, an input schema, and an execute function that reads live React
-> state. Seven tools registered on mount. Six of them are read-only. The one
-> that writes, `propose_edit`, doesn't apply anything — it queues a request and
-> returns 'awaiting approval'."
-
-*Scroll to the `propose_edit` execute body.*
-
-> "The guarantee is in the tool layer, not in a prompt. There is no code path
-> where the agent changes a number."
-
-## 2:30 — Close
-
-*Back to the page, question card and proposals visible.*
-
-> "We keep building agents that go off and do things and hand us the result.
-> Counterpart is the other shape: it asks when it's unsure, it proposes instead
-> of acting, and I stay the one who decides."
+*Return to the accepted proposal with both agent identities visible.*
 
 > "Agents shouldn't work behind our back. They should work beside us."
 

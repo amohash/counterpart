@@ -1,11 +1,14 @@
 # Counterpart
 
-A live financial model that a human and an AI agent edit together — where the
-agent cannot change anything behind your back.
+A live financial model where a human arbitrates between opposing AI agents —
+and no agent can change a number behind your back.
 
 ## Live demo
 
 https://counterpart-sandy.vercel.app
+
+The deployed demo uses Basic Auth. Judges should use the shared username
+`counterpart` and the passcode supplied in the submission form.
 
 Open it in Chrome with `chrome://flags/#enable-webmcp-testing` enabled, or in
 ChatGPT's in-app browser. If the page shows a "WebMCP not detected" badge, the
@@ -13,10 +16,11 @@ browser has no WebMCP support — the app still works as a normal financial mode
 
 ## Why this fits WebMCP
 
-WebMCP lets a page hand an agent a set of tools that are scoped to *this page*,
-running in *this tab*, against *this user's* live state. Counterpart uses that
-to invert the usual arrangement: the agent gets rich read access and zero write
-access.
+WebMCP lets a page hand agents a set of tools scoped to *this page*, running in
+*their tabs*, against *this user's* live state. Counterpart uses that to create
+a visible debate: a Growth agent can propose an aggressive edit, a Risk agent
+can rebut it, and the human sees both arguments before deciding. Agents get
+rich read access and zero direct write access.
 
 Eight tools are registered on `document.modelContext`:
 
@@ -37,16 +41,16 @@ system prompt the agent can talk itself out of.
 
 ## How it improves the user experience
 
-Financial modelling with an AI assistant today means copying numbers into a chat
-window, reading a wall of prose back, and retyping the result into your
-spreadsheet. The model and the conversation live in different places, and you
-have to reconcile them by hand.
+Financial modelling with AI assistants today means copying numbers into chat
+windows, comparing separate walls of prose, and retyping the result into a
+spreadsheet. The model, the agents' disagreement, and the decision live in
+different places, so you have to reconcile them by hand.
 
-Counterpart removes the copying. The agent reads the same numbers you are
-looking at and writes its suggestions onto the same page — as amber highlights
-showing `old → new` with a one-line rationale. You accept or reject with one
-click, and the chart redraws. Nothing moves until you say so, so you can leave
-five proposals sitting on screen and compare them before committing to any.
+Counterpart puts the debate on the model itself. Growth and Risk read the same
+live numbers across synchronized tabs. Each proposal appears as an attributed
+`old → new` highlight with a rationale; the other agent can attach an attributed
+rebuttal directly beneath it. You accept or reject with one click, and only then
+does the chart redraw. Nothing moves while the agents argue.
 
 ## What humans and agents can now do together that was impossible before
 
@@ -61,12 +65,14 @@ your answer. Before WebMCP, a web app had no way to make an agent block on a
 click in its own UI; the agent would assume, be wrong, and you'd find out three
 charts later.
 
-Combined with proposals, the two sides now have a shared workspace: the agent
-proposes and asks, the human decides, and every change has a visible author.
+Combined with proposals and rebuttals, three parties now share one workspace:
+Growth argues for expansion, Risk argues for runway, and the human arbitrates
+with both cases visible. Every proposal and counterargument has an author, and
+only the human's decision can change the model.
 
 ## How WebMCP is implemented
 
-`src/webmcp.ts` registers all seven tools once on mount, guarded by a
+`src/webmcp.ts` registers all eight tools once on mount, guarded by a
 module-level flag so React StrictMode's double-mount doesn't throw a duplicate
 name error. The tools reach live React state through a module-level actions ref,
 so registration happens once and never goes stale.
