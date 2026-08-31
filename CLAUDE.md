@@ -2,279 +2,183 @@
 
 ## RULES FOR CLAUDE CODE — READ FIRST, OBEY ALWAYS
 
-1. **Begin every single message you write to me with `Amogh:`** — no exceptions, including
-   short replies and error messages. If you ever forget, I will stop and reset the session.
-2. **Do exactly one Phase per session.** When a Phase's Done Check passes, first do
-   the Handoff (below), then say `Amogh: Phase N complete. Run /clear and start
-   Phase N+1.` Then STOP. Do not continue.
-3. **Never add a feature that is not written in this file.** No extra pages, libraries,
-   settings, dark mode, mobile layout, animations, or "nice to have" anything.
-   If you think something is missing, ask me. Do not build it.
+1. **Begin every single message you write to me with `Amogh:`** — no exceptions.
+   If you forget, Amogh will `/clear` and restart the phase.
+2. **Do exactly one Phase per session.** When a Phase's Done Check passes, do the
+   Handoff (below), say `Amogh: Phase N complete. Run /clear and start Phase N+1.`
+   Then STOP.
+3. **Never add anything not written in the current Phase.** No extra pages,
+   libraries, animations, or "nice to have" anything. Ask, don't guess.
 4. **Never read the whole repo.** Only open files named in the current Phase.
-5. **If you are unsure or an assumption is required, stop and ask me one question.**
-   Do not guess. Guessing is the failure mode I am trying to prevent.
-6. Keep your replies under 8 lines. No summaries of what you just did — I watched.
-7. Do not re-explain this file back to me.
+5. If unsure or an assumption is required, stop and ask one question.
+6. Keep replies under 8 lines. No recap of what you just did.
+7. Never create a GitHub repo, run `gh repo create`, or touch the `LICENSE` file —
+   they already exist. Never run ECC's `install.sh` on top of the plugin install.
 
 ## HOW SESSIONS REMEMBER EACH OTHER
 
-There is a file `PROGRESS.md` in the repo root. It is the memory between sessions.
-
-**At the START of every session:** read `CLAUDE.md`, then read `PROGRESS.md`. Those
-two files tell you everything. Do not read anything else until you know which Phase
-you are on.
-
-**At the END of every Phase (the Handoff), before you stop:**
-
-1. Append one block to `PROGRESS.md`, in exactly this shape — keep it under 10 lines:
+`PROGRESS.md` is the memory between sessions. At the **start** of every session, read
+`CLAUDE.md` then `PROGRESS.md` before anything else. At the **end** of every Phase
+(the Handoff), append one block (≤10 lines) to `PROGRESS.md`:
 
 ```
 ## Phase N — DONE (date)
 Files created/changed: <list>
-Done Check result: <what I verified>
-Decisions worth remembering: <any choice a future session must not contradict>
+Done Check result: <what was verified>
+Decisions worth remembering: <anything a future session must not contradict>
 Gotchas: <anything that broke and how it was fixed>
 Next: Phase N+1
 ```
 
-2. Commit and push. The commit message must be `Phase N: <short description>`.
-3. Save the same decisions to ECC memory.
-
-If `PROGRESS.md` does not exist, create it with the heading `# Progress` and nothing
-else. Never rewrite or shorten earlier entries — only append.
-
-If `PROGRESS.md` says Phase 5 is done and I ask for Phase 5 again, say so and ask
-whether I want it redone.
+Then commit as `Phase N: <short description>` and push. Save the same decisions to
+ECC memory. Never rewrite earlier entries — only append.
 
 ## WHAT WE ARE BUILDING
 
-One web page: a live financial model that a human and an AI agent edit together.
-The agent **cannot change anything directly**. It can only *propose* changes, which
-appear as colored pending highlights that I accept or reject. The agent can also
-*ask me a question* mid-task via a card on the page.
+**Counterpart.** A shared financial-model canvas where a human and AI agents edit
+the same live model together. Agents cannot change anything directly — they
+*propose*, tagged by which agent made the proposal, and the human accepts or
+rejects. Agents can pause and ask the human a question via a card on the page.
+As of Phase 11, there are **two agents with opposing incentives** — a Growth
+agent and a Risk agent — who can see and rebut each other's proposals, and the
+human is the sole arbiter between them.
 
 ## HARD CONSTRAINTS
 
-- No backend, no database, no login, no API keys. Static site only.
-- Vite + React + TypeScript. Tailwind for styling. Nothing else.
-- All state in memory + localStorage.
-- Must work in Chrome with `chrome://flags/#enable-webmcp-testing` enabled.
-- Deploys to Vercel. MIT LICENSE at repo root.
-- I do not write code. Give me copy-paste commands, one line of plain-English
-  explanation each.
-
----
-
-## GIT AND DEPLOYMENT — ALREADY SET UP
-
-The GitHub repo and the Vercel project **already exist**. I created them before you
-started. Therefore:
-
-- **Never run `gh repo create`, never create a repository, never install the `gh` CLI.**
-  If the remote isn't set, ask me for the URL. Do not invent one.
-- A `LICENSE` file (MIT) already exists in the repo. **Do not create, replace, or
-  edit it.** If you don't see it locally, you need to pull, not write a new one.
-- Vercel auto-deploys on every push to `main`. So pushing = deploying. There is
-  nothing to configure and no Vercel CLI to install.
-- Push at the end of every Phase as part of the Handoff. Never force-push.
+- No traditional backend, no database, no user accounts. Static site + Vercel only.
+- Vite + React + TypeScript + Tailwind. Recharts for charts.
+  Also allowed, added in Phase 14: `framer-motion` (motion), `lucide-react`
+  (icons), `shadcn/ui` (component primitives only — restyle everything per the
+  Visual Direction below, do not ship shadcn's default look). Nothing beyond
+  this list without asking.
+- Model state in memory + localStorage. Cross-tab sync (Phase 12+) via
+  `BroadcastChannel` + `storage` events only — same-origin, no server, no keys.
+- Must work in Chrome with `chrome://flags/#enable-webmcp-testing`, and in
+  ChatGPT's desktop in-app browser on a model with site tools enabled.
+- MIT LICENSE at repo root, detectable in the GitHub About panel.
+- Amogh does not write code. Give copy-paste commands with one-line explanations.
 
 ## BROWSER TESTING
 
-I test in two places and they are not the same:
-
-- **Chrome** with `chrome://flags/#enable-webmcp-testing` — normal development.
-- **ChatGPT's in-app browser** — what the judges use. I verify here at the end of
-  Phase 5 and Phase 8.
-
-Consequences for you:
-
-- Never rely on a browser API that might be missing. Feature-detect
-  `document.modelContext` and degrade to a visible badge, never a crash.
-- No experimental CSS or JS. Widely-supported syntax only.
-- Log tool calls to the console with a clear `[webmcp]` prefix so I can screenshot
-  errors for you.
-- If I say "it works in Chrome but not the ChatGPT browser," treat it as an
-  environment difference, not a logic bug. Ask me for the console output before
-  changing any code.
+Two environments, not interchangeable:
+- **Chrome** (flag enabled) — normal development and debugging.
+- **ChatGPT desktop in-app browser**, on a model with site tools enabled — what
+  judges use. Verify here at the end of Phase 5, Phase 8, and Phase 13.
+Feature-detect `document.modelContext`; degrade to a visible badge, never a crash.
+Log every tool call to the console with a `[webmcp]` prefix.
 
 ---
 
-## PHASE 1 — Skeleton on the internet
+## PHASES 1–10 — STATUS: DONE
 
-Goal: an ugly page with the title "Counterpart", live at the existing Vercel URL.
-
-- Scaffold in place: `npm create vite@latest . -- --template react-ts`
-  (in place — do NOT create a nested `counterpart/` folder).
-- Install Tailwind. Delete all Vite boilerplate and demo content.
-- `git remote add origin <the URL I give you>`, then pull first (the repo already has
-  a LICENSE commit), then commit and push to `main`.
-- Add a one-line `README.md`. Do not touch `LICENSE`.
-- Create `PROGRESS.md`.
-
-**Done Check:** I open the Vercel URL on my phone and see the word "Counterpart".
+Skeleton + deploy, model math engine, human-only canvas, propose/reject system,
+first WebMCP tool (`get_model_state`), `propose_edit`, `ask_human`, remaining
+tools (`run_scenario`, `annotate`, `add_chart`, `highlight`), polish, and the
+submission package (README + demo script). See `PROGRESS.md` for exact detail
+and decisions already made — do not redo or contradict them.
 
 ---
 
-## PHASE 2 — The math engine
+## PHASE 11 — Agent identity on proposals
 
-Goal: correct numbers, no UI yet.
+Goal: every proposal is tagged with which agent made it. No new agents yet —
+just the data model and UI for it.
 
-File: `src/model.ts`
+- Add `agentId: string` and `agentColor: string` to the proposal type.
+- `propose_edit` gains a required `agentName` input (e.g. "Growth", "Risk").
+  First time a name is seen, assign it a color from a small fixed palette.
+- Proposal cards show a colored name badge.
+- Update `PROGRESS.md`'s Phase 6 note: `propose_edit`'s schema changed here.
 
-Assumptions (with these defaults):
-startingMRR 50000, newCustomersPerMonth 40, arpu 250, monthlyChurnPct 3,
-cac 1200, grossMarginPct 80, monthlyOpex 180000, months 24.
+**Done Check:** Two fake proposals from `propose_edit` with different
+`agentName` values render with two different colored badges.
 
-Computed per month: customers, MRR, ARR, grossProfit, burn, cumulativeCash.
-Plus overall: ltv, ltvOverCac, runwayMonths.
+## PHASE 12 — Cross-tab sync (no backend)
 
-- Pure functions only. No React, no DOM in this file.
-- Export `computeModel(assumptions)` and `computeModel(assumptions, overrides)`.
-- Write `src/model.test.ts` with 5 tests, including: zero churn grows,
-  100% churn collapses, runway is finite when burning.
+Goal: two browser tabs on the same machine, same URL, show the same live model
+and proposal queue, instantly, with no server.
 
-**Done Check:** `npm test` passes, 5 green.
+- Use `BroadcastChannel("counterpart")` to broadcast model + proposal state
+  changes; every tab listens and merges.
+- Fall back to the `storage` event on `localStorage` if `BroadcastChannel` is
+  unsupported.
+- Last-write-wins is fine. Do not build conflict resolution.
 
----
+**Done Check:** Open the localhost URL in two tabs side by side. Accept a
+proposal in tab A. It appears accepted in tab B within one second, with no
+reload.
 
-## PHASE 3 — The canvas (human side only)
+## PHASE 13 — Two agent seats + rebuttals
 
-Goal: I can use the app alone, with no agent.
+Goal: a Growth agent and a Risk agent, each in its own tab, can propose,
+see each other's pending proposals, and rebut.
 
-- Left: assumptions panel, one editable number input per assumption.
-- Right: projection table (24 rows) + one line chart of MRR (Recharts).
-- Top: the headline numbers — ARR, LTV/CAC, runway.
-- Editing an assumption recomputes instantly. State persists in localStorage.
-- "Reset model" button.
+- Document (in `README.md`, not code) how to open two tabs: same URL in each,
+  and in each ChatGPT session tell the agent its persona — e.g. "You are the
+  Growth agent: optimistic, argues for spending and expansion" / "You are the
+  Risk agent: cautious, argues for runway and caution."
+- Add tool `rebut_proposal({proposalId, agentName, rationale})` — attaches a
+  threaded counter-note under the target proposal. Does not change its status.
+- Proposal card shows the rebuttal thread beneath it, if any.
 
-**Done Check:** I change churn from 3 to 15, the chart bends down, I reload the
-page and my change is still there.
+**Done Check:** In Chrome AND ChatGPT's in-app browser: Growth proposes raising
+opex, Risk rebuts citing runway, both show on the same card, Amogh accepts or
+rejects with both arguments visible.
 
----
+## PHASE 14 — Real design pass (using Impeccable)
 
-## PHASE 4 — The proposal system
+Goal: it looks like a shipped product, not default-Tailwind AI slop. No new
+mechanics — visual and motion only.
 
-Goal: the trust mechanic. Still no agent.
+- Confirm the Impeccable plugin is installed (Amogh does this once, see
+  STEPS_FOR_AMOGH). If `/impeccable` is not available, stop and ask Amogh.
+- Run `/impeccable init` if this is the first use in this repo — it will
+  scan the codebase and write `PRODUCT.md` / `DESIGN.md`.
+- For `PRODUCT.md`, when it asks: users are the one human using this page
+  plus AI agents calling its tools; mode is "Operate" (a working tool, not a
+  landing page); brand voice is calm and precise, like a financial terminal,
+  not hype; anti-references are purple gradients, glassmorphism, generic
+  SaaS-dashboard look, italic serif headers.
+- Run `/impeccable polish` on the whole app. Then `/impeccable audit` and fix
+  whatever it flags.
+- Install `framer-motion` and `lucide-react` only if Impeccable's own pass
+  calls for them — let the tool decide, don't add libraries preemptively.
+- Agent badges (Growth/Risk) get real visual identity, not just a color chip.
+  Headline metrics get a proper compact header. Smooth transitions on
+  proposals, rebuttals, and the question card.
+- Nothing here changes behavior — visual and motion only.
 
-- Add a `proposals` array to state: `{id, targetId, newValue, rationale, status}`.
-- A pending proposal renders as an amber highlight on that assumption, showing
-  old → new and the rationale.
-- Accept applies it and recomputes. Reject discards it. "Accept all" button.
-- Pending proposals do NOT affect the numbers until accepted.
-- Add a temporary dev button "Fake a proposal" so I can test this by hand.
+**Done Check:** `/impeccable audit` reports zero findings (or Amogh has
+consciously accepted whatever remains). Amogh compares it to the Phase 9
+screenshot and agrees it's a clear step up, with no functional regressions
+in the Phase 13 Done Check.
 
-**Done Check:** I click "Fake a proposal", see amber highlight, numbers unchanged;
-I click Accept, numbers change.
+## PHASE 15 — Optional: passcode gate
 
----
+Goal: a single shared passcode protects the deployed URL, so Amogh can supply
+credentials on the Submission Form if he chooses. This is NOT user accounts.
 
-## PHASE 5 — First WebMCP tool
+- Vercel Edge Middleware (`middleware.ts`) checks a single hardcoded/env-var
+  passcode via a simple form or Basic Auth. One shared credential, no signup,
+  no database, no per-user anything.
+- Store the passcode in a Vercel environment variable, not committed to git.
+- Must be trivially removable — this is optional per the rules ("you may
+  authenticate if you wish"); do not let it block judges who don't have it.
+  If Amogh decides against it later, this Phase's middleware file can be
+  deleted with no effect on anything else.
 
-Goal: prove the agent can see us. **This is the riskiest Phase. Only one tool.**
+**Done Check:** Visiting the URL without the passcode is blocked; with it,
+the app loads normally; the passcode is not visible in the GitHub repo.
 
-File: `src/webmcp.ts`, called once on mount.
+## PHASE 16 — Resubmission package update
 
-```ts
-document.modelContext.registerTool({
-  name: "get_model_state",
-  description: "Returns the current financial model: assumptions, computed monthly projections, headline metrics, and any pending proposals. Call this first, before anything else.",
-  inputSchema: { type: "object", properties: {}, additionalProperties: false },
-  execute: async () => ({ content: [{ type: "text", text: compactJson() }] })
-});
-```
+Goal: README and demo script reflect the multi-agent version.
 
-- Guard for `document.modelContext` being undefined (older browsers) — show a
-  small "WebMCP not detected" badge instead of crashing.
-- Return compact JSON. Round to whole numbers. Keep it under ~1500 characters.
+- Update README's four required sections to describe two opposing agents and
+  rebuttals, not just one agent.
+- Update `DEMO_SCRIPT.md`: new centerpiece is Growth and Risk disagreeing on
+  screen and Amogh arbitrating. Still under 2m45s.
+- If Phase 15 was kept, add the passcode note for judges to the README.
 
-**Done Check (two parts, both required):**
-1. In Chrome with the WebMCP flag on, I ask the agent "what's our runway?" and it
-   answers correctly.
-2. I open the Vercel URL in **ChatGPT's in-app browser** and the same question works.
-   Do not mark this Phase done until part 2 passes. This is the earliest point a
-   browser difference can surface and I want to find it now, not on submission day.
-
----
-
-## PHASE 6 — propose_edit
-
-```
-propose_edit(targetId, newValue, rationale) -> proposalId
-```
-
-- Creates a PENDING proposal. Must not apply it. Must not recompute.
-- Returns text like: `Proposed monthlyChurnPct 3 -> 15. Awaiting Amogh's approval.`
-- Reject the call with a clear error if `targetId` is not a real assumption.
-- Remove the "Fake a proposal" dev button.
-
-**Done Check:** I say "raise churn to 15%", amber highlight appears, numbers do
-not move until I click Accept.
-
----
-
-## PHASE 7 — ask_human (the centerpiece)
-
-```
-ask_human(question, options[]) -> the option I chose
-```
-
-- `execute` returns a Promise that resolves only when I click an option.
-- Renders a distinct card at the top of the page with the question and buttons.
-- No timeout. If I never click, it waits.
-- Only one question card at a time; queue any others.
-
-**Done Check:** I say "model 15% churn"; the agent asks "monthly or annual churn?";
-I click "monthly"; the agent continues and proposes the edit.
-
----
-
-## PHASE 8 — Remaining tools
-
-Add in this order, one at a time:
-
-- `run_scenario(overrides)` — computes with temporary overrides, returns headline
-  metrics, changes nothing on screen.
-- `annotate(targetId, text)` — pins a small note next to a row.
-- `add_chart(seriesIds, title)` — adds a chart below the existing one.
-- `highlight(targetIds)` — flashes those elements for 2 seconds.
-
-**Done Check:** I say "compare 3%, 8% and 15% churn, then chart cumulative cash
-and flag the risky one" and all four tools fire — **in Chrome AND in ChatGPT's
-in-app browser.** Both, before this Phase is done.
-
----
-
-## PHASE 9 — Polish
-
-- Smooth fade-in for proposals and the question card.
-- Empty state text explaining what to try, with 3 example prompts.
-- Clean spacing, readable numbers with thousands separators.
-- Nothing new. Polish only.
-
-**Done Check:** It looks like a product, not a prototype.
-
----
-
-## PHASE 10 — Submission package
-
-Write `README.md` with exactly these headings:
-
-- Live demo (URL)
-- Why this fits WebMCP
-- How it improves the user experience
-- What humans and agents can now do together that was impossible before
-- How WebMCP is implemented (paste the registerTool snippet)
-- Local setup
-- License
-
-Then write `DEMO_SCRIPT.md` — a word-for-word narration for a 2m45s video:
-
-- 0:00 one-sentence pitch, show the canvas
-- 0:20 prompt: "Model this at 15% churn and tell me if we run out of money"
-- 0:30 the agent asks me a question; I answer — narrate why this is new
-- 0:50 proposals appear; reject one, accept the rest; numbers move
-- 1:30 scenarios, chart, annotation
-- 2:10 show the registerTool code
-- 2:30 closing line: agents shouldn't work behind our back, they should work beside us
-
-**Done Check:** Both files exist and the README has all seven headings.
+**Done Check:** README has all seven headings from Phase 10, updated for two
+agents; `DEMO_SCRIPT.md` still fits under 3 minutes read aloud.
