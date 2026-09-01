@@ -409,3 +409,34 @@ Chrome-flag / ChatGPT in-app browser verification remains a pending Phase 24 QA 
 Next: Phase 23 remaining P1 candidates (save_scenario, compare_scenarios — both now lower priority
 given list_scenarios' overlap and scenario-creation's human-only design — then Present mode / 30-day
 plan / audit view / a11y), one item per session.
+
+## Phase 23 (planning only, continued 3) — DONE (2026-08-31)
+Files created/changed: PROGRESS.md, AGENTS.md (planning-only session; no source files touched).
+Done Check result: ran `/orch-add-feature` restricted to plan-only scope. Re-evaluated remaining
+Phase 23 candidates and chose **Present mode** (founder/investor walkthrough) as the next P1 item,
+ahead of `save_scenario`/`compare_scenarios` (already downgraded in Phase 23 continued/continued-2)
+and ahead of the 30-day action plan / richer audit view / extra charts+a11y, because it most directly
+serves CLAUDE.md section 19/24's "achievable in roughly two minutes"/"under three minutes" judge-demo
+requirement without touching the model, WebMCP tools, or persistence layer P0 reliability depends on.
+Classified tier: Small. No new library/skeleton research needed (reuses NavTabs, framer-motion,
+existing Decision Room/Scenarios/Pending Decisions/Board Brief components). Stopped at Gate 1 as
+instructed; plan was presented and approved by Amogh but **not implemented this session**.
+Decisions worth remembering (approved plan, to implement next session):
+- `src/hooks/usePresentMode.ts` (+ test): in-memory-only state (`isPresentMode`, `enter`/`exit`,
+  `step`, `next`/`prev`) — deliberately no localStorage persistence; presentation state is ephemeral
+  and not a CLAUDE.md-listed persistence requirement (YAGNI).
+- `src/components/PresentModeBar.tsx` (+ test): fixed overlay with exit, step label, Prev/Next;
+  drives `App.tsx`'s existing `view`/`selectedScenarioId` state rather than owning its own routing.
+- `App.tsx` wiring: header toggle near `PresetSwitcher`/`WebmcpBadge`; fixed 5-step script —
+  Decision Room (health) -> Decision Room (risks/recommendation) -> Scenarios (Cost Control) ->
+  Pending Decisions -> Board Brief. No new timeline event for entering/stepping present mode (mirrors
+  the `get_model_state`/`list_scenarios` "reading/presenting isn't itself a decision-room action"
+  precedent).
+- While `isPresentMode` is true, dim/disable `AssumptionsPanel` inputs and `PresetSwitcher` so a
+  investor walkthrough can't accidentally knock the model off-script.
+- Respect `prefers-reduced-motion` for step transitions (reuse `App.tsx`'s existing `MotionConfig`).
+- Explicit non-goals for that session: no new WebMCP tool, no present-mode persistence, no 30-day
+  plan / richer audit view / a11y work (still queued after Present mode).
+Gotchas: none (no code written).
+Next: implement the approved Present mode plan above (Gate 2 = commit confirmation after TDD +
+review), then remaining Phase 23 candidates (30-day plan, richer audit view, extra charts/a11y).

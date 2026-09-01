@@ -608,6 +608,33 @@ Do not reintroduce the deprecated API behavior.
 - `src/components/PresetSwitcher.tsx` renders in the header next to `NavTabs`. Clicking a preset calls `replaceAssumptions` + `scenarios.activate('current-plan')` directly — like the existing "Reset model" button, this is a **human action, not an agent action**, so it deliberately bypasses propose/approve. Active preset is highlighted via `detectActivePreset`, so it un-highlights the instant any assumption is hand-edited (no explicit "Custom" label yet — a P1 candidate if judges want one).
 - Manually verified in Chrome (dev server): loading "SaaS in trouble" reset assumptions and marked the button pressed; proposing the recommendation created a Pending Decisions card with current→proposed values and agent badge; Explore impact showed correct before/after runway/ARR/LTV-CAC/burn and logged exactly one timeline event per expand; Approve applied the change, cleared the card, and updated Decision Room health metrics; Reports tab rendered a correct Markdown brief reflecting the approved decision; switching the brief's scenario selector to "Cost Control" changed only the report's numbers (verified by reopening Decision Room and confirming Current Plan's metrics were untouched); Copy showed "Copied" feedback; console had no errors beyond the expected `[webmcp]` registration logs.
 
+## 18G. PHASE 23 (CONTINUED 3) — PRESENT MODE PLAN, APPROVED BUT NOT YET IMPLEMENTED
+
+Planning-only session (`/orch-add-feature`, stopped at Gate 1). No source files were touched.
+Chose **Present mode** (founder/investor walkthrough) as the next P1 item over `save_scenario`/
+`compare_scenarios` (already downgraded — see 18D/18F) and over the 30-day plan / richer audit view
+/ extra charts+a11y, because it most directly serves CLAUDE.md section 19/24's "achievable in
+roughly two minutes"/"under three minutes" judge-demo requirement without touching the model,
+WebMCP tools, or persistence layer P0 reliability depends on. Tier: Small — no new
+library/skeleton research needed.
+
+Approved plan, to implement in a future session (Gate 2 = commit confirmation after TDD + review):
+- `src/hooks/usePresentMode.ts` (+ test): in-memory-only state (`isPresentMode`, `enter`/`exit`,
+  `step`, `next`/`prev`) — deliberately no localStorage persistence; presentation state is ephemeral
+  and not a CLAUDE.md-listed persistence requirement (YAGNI).
+- `src/components/PresentModeBar.tsx` (+ test): fixed overlay with exit, step label, Prev/Next;
+  drives `App.tsx`'s existing `view`/`selectedScenarioId` state rather than owning its own routing.
+- `App.tsx` wiring: header toggle near `PresetSwitcher`/`WebmcpBadge`; fixed 5-step script —
+  Decision Room (health) -> Decision Room (risks/recommendation) -> Scenarios (Cost Control) ->
+  Pending Decisions -> Board Brief. No new timeline event for entering/stepping present mode (mirrors
+  the `get_model_state`/`list_scenarios` "reading/presenting isn't itself a decision-room action"
+  precedent).
+- While `isPresentMode` is true, dim/disable `AssumptionsPanel` inputs and `PresetSwitcher` so an
+  investor walkthrough can't accidentally knock the model off-script.
+- Respect `prefers-reduced-motion` for step transitions (reuse `App.tsx`'s existing `MotionConfig`).
+- Explicit non-goals for that future session: no new WebMCP tool, no present-mode persistence, no
+  30-day plan / richer audit view / a11y work (still queued after Present mode).
+
 # 19. CURRENT ROADMAP
 
 The next planned Phases are defined in `CLAUDE.md` (roadmap rewritten as of Phase 19/20;
@@ -620,8 +647,9 @@ this section previously listed a stale pre-rewrite roadmap — corrected here):
 - Phase 21: P0 Human approval workspace and board brief — DONE
 - Phase 22: P0 reliability, WebMCP integration, and demo readiness — DONE
 - Phase 23: P1 selective extensions — IN PROGRESS (`list_scenarios`, `generate_board_brief`, and
-  `get_decision_log` tools done; `save_scenario`, `compare_scenarios`, Present mode, 30-day plan,
-  audit/history view, and extra charts/a11y remain)
+  `get_decision_log` tools done; **Present mode plan approved, not yet implemented** — see section
+  18G; `save_scenario`, `compare_scenarios`, 30-day plan, audit/history view, and extra
+  charts/a11y remain)
 - Phase 24: Submission and final demo readiness
 
 Do not skip to a later Phase unless Amogh explicitly instructs you to do so.
