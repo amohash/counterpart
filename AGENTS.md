@@ -673,6 +673,36 @@ Approved plan, to implement in a future session (Gate 2 = commit confirmation af
   extra comparison charts, accessibility refinements. `save_scenario`/`compare_scenarios` remain
   deprioritized per sections 18D/18F.
 
+## 18I. PHASE 23 (CONTINUED 5) — 30-DAY ACTION PLAN PLAN, APPROVED BUT NOT YET IMPLEMENTED
+
+Planning-only session (`/orch-add-feature`, stopped at Gate 1). No source files were touched. Chose
+the **30-day action plan with local completion state** as the next P1 item — the first not-yet-done
+item in CLAUDE.md section 23's own listed P1 candidate order (Present mode is done — see 18H;
+`save_scenario`/`compare_scenarios` stay deprioritized per 18D/18F). Tier: Small — no new
+library/skeleton research needed.
+
+Approved plan, to implement in a future session (Gate 2 = commit confirmation after TDD + review):
+- `src/actionPlan.ts` (+ `.test.ts`): pure function `computeActionPlanItems(recommendations)` maps
+  each active `Recommendation` (from `recommendations.ts`, already ordered most-severe-first) to one
+  `ActionPlanItem = { id: 'plan-<recommendationId>', week: 1|2|3|4, title, detail, recommendationId }`
+  by index (1st -> Week 1, 2nd -> Week 2, ... capped at Week 4). Item ids derive from the stable
+  `recommendationId`, not a counter, so completion state survives a reload even as the active
+  recommendation set changes.
+- `src/hooks/useActionPlan.ts`: `Record<itemId, boolean>` completion map persisted to a new
+  localStorage key `counterpart-action-plan-completion`, same load/try-catch-fallback/save pattern as
+  `useTimeline.ts`/`useProposals.ts`. Exposes `completed` map + `toggle(itemId)`.
+- `TimelineIconKey` (in `timeline.ts`) gains one new value, `'plan'`, and `DecisionTimeline.tsx`'s
+  `ICONS` map gains a matching Lucide icon — the only non-test source change outside the new files.
+- `src/components/decision-room/ActionPlan.tsx` (new): renders the plan grouped by week with a
+  checkbox per item; toggling calls a prop callback (not `useActionPlan` directly) so `App.tsx` can
+  wrap it as `toggleActionPlanItemWithTimeline` (actor `'Amogh'`, icon `'plan'`) — mirrors the
+  existing `*WithTimeline` wrapper pattern. Renders an empty state when there are zero active
+  recommendations.
+- Placement: below `RecommendationList` in the Decision Room.
+- Explicit non-goals: no new WebMCP tool (human-only checklist); no separate persisted item list
+  (only the completion map persists — items always recompute live from current recommendations); no
+  due-date/calendar logic beyond the fixed Week 1-4 buckets.
+
 # 19. CURRENT ROADMAP
 
 The next planned Phases are defined in `CLAUDE.md` (roadmap rewritten as of Phase 19/20;
