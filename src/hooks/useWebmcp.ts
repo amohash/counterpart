@@ -9,14 +9,21 @@ import { registerModelTools, type ModelActions, type ModelSnapshot } from '../we
  */
 const DETECT_RETRY_MS = 1000;
 
-export type WebmcpActions = Omit<ModelActions, 'getSnapshot'>;
+export type WebmcpActions = Omit<ModelActions, 'getSnapshot' | 'getScenarios'>;
 
-export function useWebmcp(snapshot: ModelSnapshot, actions: WebmcpActions): boolean {
+export function useWebmcp(
+  snapshot: ModelSnapshot,
+  actions: WebmcpActions,
+  getScenarios: ModelActions['getScenarios'],
+): boolean {
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
 
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
+
+  const getScenariosRef = useRef(getScenarios);
+  getScenariosRef.current = getScenarios;
 
   const [isDetected, setIsDetected] = useState(false);
 
@@ -31,6 +38,7 @@ export function useWebmcp(snapshot: ModelSnapshot, actions: WebmcpActions): bool
       annotate: (targetId, text) => actionsRef.current.annotate(targetId, text),
       addChart: (seriesIds, title) => actionsRef.current.addChart(seriesIds, title),
       highlight: (targetIds) => actionsRef.current.highlight(targetIds),
+      getScenarios: () => getScenariosRef.current(),
     };
 
     if (registerModelTools(modelActions)) {

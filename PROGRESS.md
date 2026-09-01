@@ -333,3 +333,22 @@ Gotchas: none new. ChatGPT in-app browser leg of the two-environment WebMCP chec
 re-verified this session (no access) — flagged as a pending Phase 24 QA item, consistent with the
 historical gap tracked since Phase 8/17.
 Next: Phase 23
+
+## Phase 23 (partial) — DONE (2026-08-31)
+Files created/changed: src/webmcp.ts (+list_scenarios tool, +formatListScenariosResult,
++ModelActions.getScenarios), src/webmcp.test.ts, src/hooks/useWebmcp.ts (+getScenarios param),
+src/App.tsx (wired useScenarios into useWebmcp), AGENTS.md, PROGRESS.md.
+Done Check result: identified `list_scenarios` as the single highest-value remaining P1 item
+(agents had no visibility into the human-curated scenario library that `get_model_state` never
+exposed and `run_scenario` doesn't reference by id). TDD: wrote failing tests first (registration
+audit expected a 9th tool + a dedicated `formatListScenariosResult` test), confirmed red, then
+implemented. 107 tests green (2 new), `tsc -b` and `npm run build` clean, `oxlint` shows only the
+pre-existing documented warning categories (one more `useWebmcp.ts` ref warning from the new
+`getScenariosRef`, same pattern as the existing two, no new category).
+Decisions worth remembering: see AGENTS.md section 18D (Phase 23 durable decisions) — read-only
+tool, no timeline event (same precedent as get_model_state), reuses DerivedScenario verbatim.
+Gotchas: none. Live-browser (Chrome flag / ChatGPT in-app) manual QA for this tool was not
+performed this session (no browser automation access) — flagged as a pending Phase 24 QA item,
+same historical pattern as prior WebMCP phases.
+Next: Phase 23 remaining P1 candidates (save_scenario, compare_scenarios, generate_board_brief,
+get_decision_log, then Present mode / 30-day plan / audit view / a11y), one item per session.

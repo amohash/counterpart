@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   formatAskHumanResult,
+  formatListScenariosResult,
   formatProposeEditResult,
   formatRunScenarioResult,
   isProposalId,
@@ -14,6 +15,29 @@ import {
 } from './webmcp';
 import { computeModel, DEFAULT_ASSUMPTIONS } from './model';
 import type { Proposal } from './proposal';
+import type { DerivedScenario } from './scenarios';
+
+function makeDerivedScenario(overrides: Partial<DerivedScenario> = {}): DerivedScenario {
+  const assumptions = { ...DEFAULT_ASSUMPTIONS };
+  const output = computeModel(assumptions);
+  return {
+    id: 'current-plan',
+    name: 'Current Plan',
+    description: 'The live financial model with no temporary overrides.',
+    overrides: {},
+    isBuiltIn: true,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+    assumptions,
+    runwayMonths: output.runwayMonths,
+    arr: output.rows[output.rows.length - 1]?.arr ?? 0,
+    ltvOverCac: output.ltvOverCac,
+    monthlyBurn: 1000,
+    status: 'healthy',
+    deltas: { runwayMonths: 0, arr: 0, ltvOverCac: 0, monthlyBurn: 0 },
+    ...overrides,
+  };
+}
 
 describe('validateProposeEditInput', () => {
   test('accepts a valid proposal and trims the rationale', () => {
@@ -285,6 +309,41 @@ describe('formatAskHumanResult', () => {
   });
 });
 
+describe('formatListScenariosResult', () => {
+  test('marks the active scenario and includes comparable metrics for every scenario', () => {
+    // Arrange
+    const scenarios = [
+      makeDerivedScenario({ id: 'current-plan', name: 'Current Plan' }),
+      makeDerivedScenario({
+        id: 'cost-control',
+        name: 'Cost Control',
+        description: 'Roughly 20% lower monthly opex.',
+        isBuiltIn: true,
+        status: 'at-risk',
+        runwayMonths: 9,
+        monthlyBurn: 800,
+      }),
+    ];
+
+    // Act
+    const result = JSON.parse(formatListScenariosResult(scenarios, 'cost-control'));
+
+    // Assert
+    expect(result.scenarios).toHaveLength(2);
+    expect(result.scenarios.find((item: { id: string }) => item.id === 'current-plan').isActive).toBe(false);
+    expect(result.scenarios.find((item: { id: string }) => item.id === 'cost-control').isActive).toBe(true);
+    expect(result.scenarios[1]).toMatchObject({
+      id: 'cost-control',
+      name: 'Cost Control',
+      description: 'Roughly 20% lower monthly opex.',
+      isBuiltIn: true,
+      status: 'at-risk',
+      runwayMonths: 9,
+      monthlyBurn: 800,
+    });
+  });
+});
+
 describe('WebMCP registration audit', () => {
   test('discovers all tools and routes each tool through current page actions without silent model mutation', async () => {
     const registered = new Map<string, { execute: (input?: unknown) => Promise<{ content: Array<{ text: string }> }> }>();
@@ -295,6 +354,7 @@ describe('WebMCP registration audit', () => {
     const highlights: string[][] = [];
     const assumptions = { ...DEFAULT_ASSUMPTIONS };
     const output = computeModel(assumptions);
+    const scenarios = [makeDerivedScenario({ id: 'current-plan', name: 'Current Plan' })];
 
     Object.defineProperty(globalThis, 'document', {
       configurable: true,
@@ -336,6 +396,7 @@ describe('WebMCP registration audit', () => {
             return { id: 'chart-1', seriesIds, title };
           },
           highlight: (targetIds) => highlights.push(targetIds),
+          getScenarios: () => ({ scenarios, activeScenarioId: 'current-plan' }),
         }),
       ).toBe(true);
 
@@ -348,6 +409,12 @@ describe('WebMCP registration audit', () => {
         'annotate',
         'add_chart',
         'highlight',
+        'list_scenarios',
+      ]);
+
+      const scenariosResult = await registered.get('list_scenarios')!.execute({});
+      expect(JSON.parse(scenariosResult.content[0].text).scenarios).toEqual([
+        expect.objectContaining({ id: 'current-plan', isActive: true }),
       ]);
 
       const state = await registered.get('get_model_state')!.execute({});

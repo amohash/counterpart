@@ -185,6 +185,7 @@ function App() {
       addChart: addChartWithTimeline,
       highlight: highlightWithTimeline,
     },
+    () => ({ scenarios: scenarios.scenarios, activeScenarioId: scenarios.activeScenarioId }),
   );
 
   const handleRecommendationPropose = (recommendation: Recommendation) => {

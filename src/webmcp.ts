@@ -11,6 +11,7 @@ import {
 import type { ExtraChartSpec } from './hooks/useCharts';
 import type { Proposal } from './proposal';
 import { validateAskHumanInput } from './questions';
+import type { DerivedScenario } from './scenarios';
 
 const LOG_PREFIX = '[webmcp]';
 
@@ -37,6 +38,8 @@ export interface ModelActions {
   addChart: (seriesIds: MonthlySeriesId[], title: string) => ExtraChartSpec;
   /** Flashes the given rows on the page for 2 seconds. */
   highlight: (targetIds: Array<keyof Assumptions>) => void;
+  /** The same scenario library the human sees on the Scenarios tab, read-only. */
+  getScenarios: () => { scenarios: DerivedScenario[]; activeScenarioId: string };
 }
 
 interface ToolResult {
@@ -602,6 +605,46 @@ const HIGHLIGHT: ToolDefinition = {
   },
 };
 
+/** Compact list of the human-curated scenario library (built-in + saved),
+ * with the same metrics shown on the Scenarios tab, so an agent can reference
+ * scenarios by name instead of guessing overrides. Read-only. */
+export function formatListScenariosResult(scenarios: DerivedScenario[], activeScenarioId: string): string {
+  const payload = {
+    scenarios: scenarios.map((scenario) => ({
+      id: scenario.id,
+      name: scenario.name,
+      description: scenario.description,
+      isBuiltIn: scenario.isBuiltIn,
+      isActive: scenario.id === activeScenarioId,
+      status: scenario.status,
+      runwayMonths: round(scenario.runwayMonths),
+      arr: round(scenario.arr),
+      ltvOverCac: Number.isFinite(scenario.ltvOverCac) ? Math.round(scenario.ltvOverCac * 10) / 10 : null,
+      monthlyBurn: round(scenario.monthlyBurn),
+    })),
+  };
+  return JSON.stringify(payload);
+}
+
+const LIST_SCENARIOS: ToolDefinition = {
+  name: 'list_scenarios',
+  description:
+    'Lists the saved scenario library (Current Plan and any built-in or human-saved scenarios) with their runway, ARR, LTV/CAC, and burn, and which one is currently active. Read-only — activating a scenario is a human action on the Scenarios tab. Use this to reference a scenario by name before calling run_scenario or propose_edit.',
+  inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  execute: async () => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} list_scenarios called with no page actions available`);
+      return { content: [{ type: 'text', text: '{"error":"scenario list unavailable"}' }] };
+    }
+
+    const { scenarios, activeScenarioId } = actions.getScenarios();
+    const text = formatListScenariosResult(scenarios, activeScenarioId);
+    console.log(`${LOG_PREFIX} list_scenarios -> ${text.length} chars`);
+    return { content: [{ type: 'text', text }] };
+  },
+};
+
 const TOOLS: ToolDefinition[] = [
   GET_MODEL_STATE,
   PROPOSE_EDIT,
@@ -611,6 +654,7 @@ const TOOLS: ToolDefinition[] = [
   ANNOTATE,
   ADD_CHART,
   HIGHLIGHT,
+  LIST_SCENARIOS,
 ];
 
 /**

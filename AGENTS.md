@@ -107,6 +107,7 @@ Existing tools:
 - `add_chart`
 - `highlight`
 - `rebut_proposal`
+- `list_scenarios` (Phase 23)
 
 Do not remove existing tools.
 
@@ -418,9 +419,35 @@ Then add the chronological detail to `PROGRESS.md`.
 
 ---
 
+# 18D. PHASE 23 DURABLE DECISIONS
+
+- Added exactly one P1 item: the `list_scenarios` WebMCP tool. Chosen because it was the only
+  concrete gap in CLAUDE.md's Phase 23 tool candidates (`list_scenarios`/`save_scenario`/
+  `compare_scenarios`/`generate_board_brief`/`get_decision_log`) that agents had zero visibility
+  into: `get_model_state` never mentioned scenarios, and `run_scenario` takes raw
+  `overrides: Record<string, number>` (not a scenario id), so an agent could not previously
+  discover or reference the human-curated scenario library (Current Plan/Cost Control/Retention
+  Recovery/Growth Bet, plus any user-saved scenarios) by name.
+- `list_scenarios` is read-only, no-input, mirrors `get_model_state`'s "no live actions available"
+  fallback shape, and reuses `scenarios.ts`'s existing `DerivedScenario` fields verbatim — no new
+  scenario logic was added. `formatListScenariosResult(scenarios, activeScenarioId)` is the pure,
+  exported, directly-tested formatter (same pattern as `formatRunScenarioResult`).
+- `ModelActions` gained `getScenarios: () => { scenarios: DerivedScenario[]; activeScenarioId: string }`.
+  `useWebmcp` now takes a third argument, `getScenarios`, held in its own ref (same
+  ref-per-render-value pattern as `snapshotRef`/`actionsRef`) so the already-registered tool keeps
+  reading live scenario state across re-renders. `App.tsx`'s single `useWebmcp(...)` call site now
+  passes `() => ({ scenarios: scenarios.scenarios, activeScenarioId: scenarios.activeScenarioId })`
+  from the existing `useScenarios()` hook result — no new state was introduced.
+- Like `get_model_state`, `list_scenarios` deliberately logs no timeline event (Phase 19's "no
+  model-read timeline event" decision extends to this read tool).
+- Did not implement `save_scenario`, `compare_scenarios`, `generate_board_brief`, or
+  `get_decision_log` this Phase — per CLAUDE.md's "do not begin a candidate until the prior one is
+  complete" rule and Amogh's explicit "one P1 item per session" instruction. These remain open
+  Phase 23 candidates for a future session, in that priority order.
+
 # 18. CURRENT STATUS
 
-Phases 1–22 are complete.
+Phases 1–23 (partial: one P1 item) are complete.
 
 Current known major capabilities:
 - financial model;
@@ -512,7 +539,9 @@ this section previously listed a stale pre-rewrite roadmap — corrected here):
 - Phase 20: P0 Saved scenarios and Forecast workspace — DONE
 - Phase 21: P0 Human approval workspace and board brief — DONE
 - Phase 22: P0 reliability, WebMCP integration, and demo readiness — DONE
-- Phase 23: P1 selective extensions
+- Phase 23: P1 selective extensions — IN PROGRESS (`list_scenarios` tool done; `save_scenario`,
+  `compare_scenarios`, `generate_board_brief`, `get_decision_log`, Present mode, 30-day plan,
+  audit/history view, and extra charts/a11y remain, in that priority order)
 - Phase 24: Submission and final demo readiness
 
 Do not skip to a later Phase unless Amogh explicitly instructs you to do so.
