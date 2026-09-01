@@ -508,3 +508,20 @@ Gotchas: none (no code written).
 Next: implement the approved 30-day action plan above (Gate 2 = commit confirmation after TDD +
 review), then remaining Phase 23 candidates (richer audit/history view, extra comparison charts,
 accessibility refinements).
+
+## Phase 23 (planning only, continued 6) — DONE (2026-08-31)
+Files created/changed: PROGRESS.md, AGENTS.md (planning-only session; no source files touched).
+Done Check result: ran `/orch-add-feature` restricted to plan-only scope, re-confirming the plan
+already approved in the prior planning-only session (§18I/continued 5) for the **30-day action plan
+with local completion state** — still the highest-value not-yet-done P1 item in CLAUDE.md §23's
+candidate order. Tier: Small, no new libraries/skeletons needed. Presented the plan again at Gate 1
+this session; Amogh explicitly approved it ("approve"). Stopped at Gate 1 as instructed — **no
+source files were touched this session**.
+Decisions worth remembering: plan content is unchanged from §18I (see that section for the full
+task breakdown: `src/actionPlan.ts`, `src/hooks/useActionPlan.ts`, `TimelineIconKey` +`'plan'`,
+`src/components/decision-room/ActionPlan.tsx`, placement below `RecommendationList`, no new WebMCP
+tool).
+Gotchas: none (no code written).
+Next: implement the approved 30-day action plan (Gate 2 = commit confirmation after TDD + review),
+then remaining Phase 23 candidates (richer audit/history view, extra comparison charts,
+accessibility refinements).
