@@ -28,7 +28,7 @@ import { useScenarios } from './hooks/useScenarios';
 import { useTimeline } from './hooks/useTimeline';
 import { useWebmcp } from './hooks/useWebmcp';
 import { computeHealthMetrics } from './health';
-import type { Assumptions } from './model';
+import type { Assumptions, MonthlySeriesId } from './model';
 import type { Proposal } from './proposal';
 import { computeRecommendations, type Recommendation } from './recommendations';
 import { detectActivePreset, type Preset } from './presets';
@@ -94,6 +94,22 @@ function App() {
     if (proposal) {
       addEvent(HUMAN_ACTOR, 'reject', `rejected the proposed change to ${proposal.targetId}.`);
     }
+  };
+
+  const annotateWithTimeline = (targetId: keyof Assumptions, text: string) => {
+    addAnnotation(targetId, text);
+    addEvent('Counterpart', 'proposal', `annotated ${targetId}.`, text);
+  };
+
+  const addChartWithTimeline = (seriesIds: MonthlySeriesId[], title: string) => {
+    const chart = addChart(seriesIds, title);
+    addEvent('Counterpart', 'report', `added the "${title}" chart.`, seriesIds.join(', '));
+    return chart;
+  };
+
+  const highlightWithTimeline = (targetIds: Array<keyof Assumptions>) => {
+    highlight(targetIds);
+    addEvent('Counterpart', 'read', `flagged ${targetIds.join(', ')} for attention.`);
   };
 
   const exploreImpactWithTimeline = (proposal: Proposal) => {
@@ -165,9 +181,9 @@ function App() {
       proposeEdit: proposeWithTimeline,
       rebutProposal: rebutWithTimeline,
       askHuman,
-      annotate: addAnnotation,
-      addChart,
-      highlight,
+      annotate: annotateWithTimeline,
+      addChart: addChartWithTimeline,
+      highlight: highlightWithTimeline,
     },
   );
 

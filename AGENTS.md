@@ -420,7 +420,7 @@ Then add the chronological detail to `PROGRESS.md`.
 
 # 18. CURRENT STATUS
 
-Phases 1–19 are complete.
+Phases 1–22 are complete.
 
 Current known major capabilities:
 - financial model;
@@ -511,11 +511,52 @@ this section previously listed a stale pre-rewrite roadmap — corrected here):
 - Phase 19: P0 Decision Room and deterministic financial intelligence — DONE
 - Phase 20: P0 Saved scenarios and Forecast workspace — DONE
 - Phase 21: P0 Human approval workspace and board brief — DONE
-- Phase 22: P0 reliability, WebMCP integration, and demo readiness
+- Phase 22: P0 reliability, WebMCP integration, and demo readiness — DONE
 - Phase 23: P1 selective extensions
 - Phase 24: Submission and final demo readiness
 
 Do not skip to a later Phase unless Amogh explicitly instructs you to do so.
+
+---
+
+# 18C. PHASE 22 DURABLE DECISIONS
+
+- WebMCP tool audit (all 8 tools) found registration/execution/logging already sound against the
+  upgraded UI: `propose_edit`/`rebut_proposal` route through `proposeWithTimeline`/`rebutWithTimeline`
+  so agent-created proposals appear in Pending Decisions (not just the old Forecast highlight);
+  `run_scenario` stays read-only (throwaway `computeModel`, never touches `useScenarios` state);
+  every tool call keeps the `[webmcp]` prefix. No tool registration changes were needed.
+- Gap found and fixed: `annotate`/`add_chart`/`highlight` are visible, meaningful agent actions per
+  CLAUDE.md section 12 but were not logged to the decision timeline (only `propose_edit`/
+  `rebut_proposal`/accept/reject/scenario/preset/board-brief actions were). Added
+  `annotateWithTimeline`/`addChartWithTimeline`/`highlightWithTimeline` wrappers in `App.tsx`
+  following the existing `*WithTimeline` pattern, using actor `'Counterpart'` (not `'Amogh'`) since
+  these are agent-only tool calls, not human UI actions — icon reuse: `annotate` -> `proposal` icon,
+  `addChart` -> `report` icon, `highlight` -> `read` icon (`DecisionTimeline.tsx`'s `ICONS` map
+  already covered every `TimelineIconKey`, no new icon needed). `get_model_state` still deliberately
+  logs nothing (Phase 19 decision, unchanged).
+- Gap found and fixed: `BoardBrief.tsx`'s `handleCopy` called `navigator.clipboard.writeText` with no
+  error handling — a denied/unavailable Clipboard API would throw uncaught and silently fail with no
+  user feedback. Wrapped in try/catch; `copyState` widened to `'idle' | 'copied' | 'error'`, button
+  shows "Copy failed" in the amber-review red-accent style and logs a `[webmcp]`-prefixed console
+  error, `aria-live="polite"` added so the state change is announced. This is the only unguarded
+  error path found in the surface audit.
+- localStorage load safety was already complete across the app before this Phase: `useModelState.ts`,
+  `useTimeline.ts`, and `scenarios.ts`'s `hydrateScenarioState` (used by `useScenarios.ts`) all wrap
+  `JSON.parse` in try/catch and fall back to safe defaults on malformed data. No changes needed here
+  — verified, not assumed.
+- Manual QA in Chrome (dev server, via chrome-devtools MCP): fresh load shows all 8 tools registered
+  with zero console errors; Decision Room, Scenarios, Forecast, and Reports all render correctly at
+  desktop and a 390x844 mobile viewport with no layout overflow or unexpected warnings; Copy on the
+  Board Brief exercises the new try/catch path cleanly (succeeds in this browser context, reverts to
+  "Copy" after the existing 2s timeout). Did not have ChatGPT in-app browser access this session —
+  that leg of CLAUDE.md section 16's two-environment WebMCP check remains a pending manual QA item
+  for Amogh before final submission (Phase 24), same historical gap noted since Phase 8/17.
+- Scope discipline: did not add new WebMCP tools, a11y library, or new UI states beyond what the
+  audit concretely found missing — full WCAG-level accessibility pass and additional loading-skeleton
+  states were explicitly deferred as out of scope per the approved Phase 22 plan (existing
+  aria-current/aria-pressed/role=group patterns and localStorage-backed persistence already covered
+  the loading/empty states that matter for a client-only app with synchronous hydration).
 
 ---
 

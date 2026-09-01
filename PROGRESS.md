@@ -311,3 +311,25 @@ Gotchas: caught and fixed a real StrictMode double-invocation bug where the "Exp
 timeline log lived inside a setState updater function and fired twice per click in dev; moved the
 side effect outside the updater before shipping. See AGENTS.md 18B for the reusable pattern.
 Next: Phase 22
+
+## Phase 22 — DONE (2026-08-31)
+Files created/changed: src/App.tsx, src/components/reports/BoardBrief.tsx, AGENTS.md, PROGRESS.md.
+Done Check result: audited all 8 WebMCP tools against the upgraded Decision Room/Scenarios/Forecast/
+Reports UI — registration, live-state wiring, validation, and `[webmcp]` logging were all already
+correct, no tool changes needed. Audited localStorage load paths (useModelState, useTimeline,
+scenarios.ts's hydrateScenarioState) — all already guarded against malformed data with safe
+fallbacks, no changes needed. Found and fixed two concrete gaps: (1) annotate/add_chart/highlight
+tool calls were not recorded in the decision timeline despite being meaningful agent actions per
+CLAUDE.md section 12; (2) BoardBrief's clipboard copy had no error handling. 106 tests pass (no new
+tests needed — both fixes are UI-wiring, not new pure logic), `tsc -b` and `npm run build` clean,
+source lint shows only the three pre-existing documented warnings (no new ones). Manual QA via
+chrome-devtools MCP against the dev server: fresh load registers all 8 tools with zero console
+errors; Decision Room, Scenarios, Forecast, and Reports all verified at desktop and 390x844 mobile
+viewports with no layout regressions; Copy button exercises the new try/catch path successfully.
+Decisions worth remembering: see AGENTS.md section 18C (Phase 22 durable decisions) for the full
+audit findings, the *WithTimeline wrapper pattern extended to annotate/add_chart/highlight using
+actor "Counterpart", and the BoardBrief copy-error handling.
+Gotchas: none new. ChatGPT in-app browser leg of the two-environment WebMCP check was not
+re-verified this session (no access) — flagged as a pending Phase 24 QA item, consistent with the
+historical gap tracked since Phase 8/17.
+Next: Phase 23

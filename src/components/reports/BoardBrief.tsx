@@ -24,7 +24,7 @@ const COPY_FEEDBACK_MS = 2000;
  * never touching the live assumptions. */
 export function BoardBrief({ scenarios, activeScenarioId, proposals, onGenerated }: BoardBriefProps) {
   const [selectedScenarioId, setSelectedScenarioId] = useState(activeScenarioId);
-  const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
   const [regenerateNonce, setRegenerateNonce] = useState(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -66,10 +66,16 @@ export function BoardBrief({ scenarios, activeScenarioId, proposals, onGenerated
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(markdown);
-    setCopyState('copied');
-    clearTimeout(copyTimerRef.current);
-    copyTimerRef.current = setTimeout(() => setCopyState('idle'), COPY_FEEDBACK_MS);
+    try {
+      await navigator.clipboard.writeText(markdown);
+      setCopyState('copied');
+    } catch (error: unknown) {
+      console.error('[webmcp] board brief copy failed', error);
+      setCopyState('error');
+    } finally {
+      clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopyState('idle'), COPY_FEEDBACK_MS);
+    }
   };
 
   const handleDownload = () => {
@@ -116,14 +122,19 @@ export function BoardBrief({ scenarios, activeScenarioId, proposals, onGenerated
           <button
             type="button"
             onClick={handleCopy}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#e6e8e3] px-3 text-xs font-semibold text-[#3e4a44] transition hover:bg-[#daddd6] active:translate-y-px"
+            aria-live="polite"
+            className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition active:translate-y-px ${
+              copyState === 'error'
+                ? 'bg-[#faece9] text-[#9c3b32] hover:bg-[#f6ddd7]'
+                : 'bg-[#e6e8e3] text-[#3e4a44] hover:bg-[#daddd6]'
+            }`}
           >
             {copyState === 'copied' ? (
               <Check aria-hidden="true" size={13} strokeWidth={2.2} />
             ) : (
               <ClipboardCopy aria-hidden="true" size={13} strokeWidth={2.2} />
             )}
-            {copyState === 'copied' ? 'Copied' : 'Copy'}
+            {copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy failed' : 'Copy'}
           </button>
           <button
             type="button"
