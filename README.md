@@ -22,7 +22,7 @@ a visible debate: a Growth agent can propose an aggressive edit, a Risk agent
 can rebut it, and the human sees both arguments before deciding. Agents get
 rich read access and zero direct write access.
 
-Eight tools are registered on `document.modelContext`:
+Eleven tools are registered on `document.modelContext`:
 
 | Tool | What it does |
 |---|---|
@@ -34,6 +34,9 @@ Eight tools are registered on `document.modelContext`:
 | `annotate` | Pins a note next to an assumption |
 | `add_chart` | Adds a chart of chosen series below the existing one |
 | `highlight` | Flashes elements for two seconds to direct attention |
+| `list_scenarios` | Lists the saved scenario library with runway/ARR/LTV/CAC/burn and the active scenario — read-only |
+| `generate_board_brief` | Generates a deterministic Markdown board update for a scenario — read-only |
+| `get_decision_log` | Returns the human-agent decision timeline, most-recent-first — read-only |
 
 Only `propose_edit` can ever touch the model, and it only queues a request. The
 human is the sole writer. That guarantee lives in the tool layer, not in a
@@ -72,7 +75,7 @@ only the human's decision can change the model.
 
 ## How WebMCP is implemented
 
-`src/webmcp.ts` registers all eight tools once on mount, guarded by a
+`src/webmcp.ts` registers all eleven tools once on mount, guarded by a
 module-level flag so React StrictMode's double-mount doesn't throw a duplicate
 name error. The tools reach live React state through a module-level actions ref,
 so registration happens once and never goes stale.
@@ -124,7 +127,7 @@ git clone https://github.com/amohash/counterpart.git
 cd counterpart
 npm install
 npm run dev     # http://localhost:5173
-npm test        # 41 tests
+npm test        # 133 tests
 npm run build
 ```
 

@@ -1,89 +1,99 @@
-# Demo script — Counterpart (2m40s)
+# Demo script — Counterpart (2m45s)
 
 Word-for-word narration. Timestamps are cues, not hard cuts.
 Record in Chrome with `chrome://flags/#enable-webmcp-testing` enabled and the
-Model Context Tool Inspector extension open beside the page.
+Model Context Tool Inspector extension open beside the page, or in ChatGPT's
+in-app browser with site tools enabled.
 
 ---
 
-## 0:00 — Pitch and canvas
+## 0:00 — Decision Room and the risk
 
-> "This is Counterpart: a live financial model where two AI agents disagree in
-> public, and I make the decision. Neither agent can change a single number."
+*Open Counterpart. It loads on the Decision Room with the "SaaS in trouble"
+preset active. Point to the four health cards (Runway, ARR, LTV/CAC, Monthly
+burn) and the deterministic risk list below them.*
 
-*Show the full page. Cursor across the assumptions on the left, the 24-month
-projection, MRR chart, and headline metrics. Keep two agent sessions beside it:
-Growth and Risk, both on the same URL.*
+> "This is Counterpart: a live financial model where AI agents can read,
+> analyze, and propose changes — but only I can apply one. Right now the model
+> is in trouble: runway is critical, and the risk list says so in plain
+> language, not just a red number."
 
-## 0:18 — Growth proposes
+## 0:20 — Agent reads the model
 
-*In the Growth session, type:*
+*In an agent session, type:*
 
-> **"You are the Growth agent. Review the model and propose raising monthly
-> operating expenses to accelerate expansion. Use agentName Growth."**
+> **"You are the Risk agent. Read the current model and tell me the biggest
+> threat. Use agentName Risk."**
 
-*Let it call `get_model_state`, then `propose_edit`. A Growth-tagged amber card
-appears showing the old and proposed values.*
+*Let it call `get_model_state`. Point to the `[webmcp]`-prefixed console log.*
 
-> "Growth reads the live model through WebMCP and makes its case on the canvas.
-> This is a proposal, not a mutation: ARR, runway, and the chart have not moved."
+> "The agent reads the exact same model I'm looking at through
+> `get_model_state` — assumptions, projections, and pending proposals — before
+> it says anything."
 
-## 0:48 — Risk rebuts
+## 0:40 — Scenario exploration
 
-*Switch to the Risk session. Type:*
+*Same session, type:*
 
-> **"You are the Risk agent. Review Growth's pending proposal, assess runway,
-> and rebut it on the proposal card. Use agentName Risk."**
+> **"Run the Cost Control scenario and tell me the effect on runway before
+> proposing anything."**
 
-*Risk calls `get_model_state`, sees Growth's proposal, and calls
-`rebut_proposal`. Point to the Risk-tagged counterargument beneath Growth's
-case.*
+*Let `run_scenario` fire. Switch to the Scenarios tab to show Cost Control's
+projected runway/ARR/LTV/CAC/burn beside Current Plan — nothing on the active
+plan has moved.*
 
-> "Risk sees the exact same pending proposal in its synchronized tab and argues
-> against it without changing its status. The disagreement is attached to the
-> decision, not buried in two chat transcripts."
+> "Scenarios are temporary. `run_scenario` computes Cost Control's numbers
+> without touching the live plan — I can see the tradeoff before anyone
+> commits to it."
 
-## 1:18 — Human arbitration
+## 1:05 — Growth proposes, Risk rebuts
 
-*Point to Growth's rationale, Risk's rebuttal, and the unchanged runway metric.*
+*Switch to a Growth session:*
 
-> "Both agents have incentives and identities. Neither gets the final word. I
-> can compare the upside with the runway warning while the original model stays
-> untouched."
+> **"You are the Growth agent. Propose raising new customers per month to grow
+> faster. Use agentName Growth."**
 
-*Click **Accept** on Growth's proposal. The assumption, projection, chart, and
-runway update in both tabs.*
+*Growth calls `propose_edit`; an amber proposal card appears in Pending
+Decisions with current vs. proposed values and estimated impact on runway,
+ARR, LTV/CAC, and burn. Switch back to the Risk session:*
 
-> "I accept it. Only now does the model move, and both agents see my decision
-> within a second. If Risk had convinced me, Reject would have preserved the
-> original model. The human is the sole writer and arbiter."
+> **"Review Growth's pending proposal and rebut it using the runway risk."**
 
-## 1:48 — Ask, analyze, and explain
+*Risk calls `rebut_proposal`. Point to the attributed rebuttal thread beneath
+Growth's card.*
 
-*In either agent session, type:*
+> "Growth and Risk see the same pending proposal and argue from the same
+> numbers. Neither can change the model — only I can."
 
-> **"Compare three runway scenarios, chart cumulative cash, and flag the risky
-> one. Ask me if any assumption is ambiguous."**
+## 1:40 — Human decision
 
-*Let `run_scenario`, `add_chart`, `annotate`, and `highlight` fire. If the agent
-asks a question, answer its card on the page.*
+*Point to the proposal, Growth's rationale, and Risk's rebuttal side by side.*
 
-> "The agents can calculate temporary scenarios, add a chart, annotate the
-> model, highlight risk, or pause on an on-page question. Those tools enrich the
-> shared workspace; none bypass approval. Every call logs with a `webmcp`
-> prefix."
+> "I can weigh both cases against the runway risk I saw a minute ago. Given
+> where runway sits, I'm protecting it first."
 
-## 2:15 — The code and close
+*Click **Reject** on Growth's proposal. Show the model unchanged and a new
+timeline entry recording the rejection.*
 
-*Cut to `src/webmcp.ts`, then scroll from `get_model_state` to `propose_edit`
-and `rebut_proposal`.*
+> "Rejecting leaves every number exactly where it was — and the decision is
+> now part of the record, not lost in a chat transcript."
 
-> "Eight tools register on `document.modelContext`. `propose_edit` queues a
-> request. `rebut_proposal` attaches an argument. The guarantee lives in the
-> tool layer: neither path can mutate an assumption."
+## 2:05 — Timeline and board brief
 
-*Return to the accepted proposal with both agent identities visible.*
+*Scroll the Decision Timeline: model read, risk identified, scenario run,
+proposal, rebuttal, rejection — each with an actor and a timestamp. Switch to
+Reports.*
 
-> "Agents shouldn't work behind our back. They should work beside us."
+> "Every meaningful action — human or agent — lands on this timeline. And from
+> the same model, Reports generates a board-ready update: snapshot, risks,
+> recommended actions, and outlook, ready to copy or download."
+
+## 2:30 — Close
+
+*Return to the Decision Room.*
+
+> "Eleven tools register on `document.modelContext`, but only one of them,
+> `propose_edit`, can ever touch the model — and only after I approve it.
+> Agents shouldn't work behind our back. They should work beside us."
 
 *Hold on the page. End.*

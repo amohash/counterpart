@@ -942,6 +942,44 @@ Do not skip to a later Phase unless Amogh explicitly instructs you to do so.
 
 ---
 
+# 19. PHASE 24 — SUBMISSION READINESS AUDIT
+
+Phase 24 is a verification/documentation pass, not a new-capability build. It
+was run directly against CLAUDE.md's Phase Execution Protocol rather than
+through `/orch-add-feature`'s TDD-feature gates, since there was no new
+capability to plan or test-drive.
+
+Findings:
+- `npm run build` (`tsc -b && vite build`), `npx vitest run` (133/133), and
+  `npx oxlint src` (only the six pre-existing documented warnings, no new
+  categories) are all clean as of this Phase.
+- The WebMCP tool surface has grown to **eleven** tools (`get_model_state`,
+  `propose_edit`, `rebut_proposal`, `ask_human`, `run_scenario`, `annotate`,
+  `add_chart`, `highlight`, `list_scenarios`, `generate_board_brief`,
+  `get_decision_log` — the last three added across Phase 23), but `README.md`
+  and `DEMO_SCRIPT.md` still said "eight tools" and described the pre-Phase-19
+  UI. Both were corrected this Phase: README's tool table/count/test-count and
+  the `src/webmcp.ts` doc-comment line now say eleven; DEMO_SCRIPT.md was
+  rewritten end-to-end to walk the actual current judge path (Decision Room →
+  agent read → scenario run → Growth propose/Risk rebut → human reject →
+  timeline → Reports/board brief) instead of the old flat calculator-era flow.
+- `HACKATHON.md` was deliberately **not** edited: it is a dated (August 31,
+  2026) point-in-time audit snapshot from Phase 17, not a living doc — its
+  "eight-tool" and "41 tests" references describe what was true when that
+  audit ran. Do not silently update its historical claims; if a future Phase
+  needs a current compliance snapshot, generate a new dated section instead of
+  rewriting the old one.
+- No secrets, hardcoded credentials, or unsafe tracked files found in `src/`.
+- LICENSE (MIT, Amogh Astagi) untouched, as required.
+- Manual browser QA (WebMCP tool execution in Chrome + ChatGPT in-app browser,
+  full fresh-load judge-path rehearsal) was **not** performed this session — no
+  browser automation tool was available. This is a carried-forward gap from
+  Phases 20–23; before the actual hackathon submission, Amogh must manually
+  rehearse the DEMO_SCRIPT.md flow in both required environments per CLAUDE.md
+  §16.
+
+---
+
 # 20. FINAL PRINCIPLE
 
 Counterpart wins by making WebMCP necessary to the experience.

@@ -596,3 +596,39 @@ to inferred typing, matching the pattern review flagged as a nit rather than a r
 Manual browser QA not performed this session (no browser automation access) — flagged as a pending
 Phase 24 QA item alongside the existing backlog.
 Next: Phase 24 — Submission and final demo readiness.
+
+## Phase 24 — DONE (2026-08-31)
+Files created/changed: README.md (tool table/count "eight"→"eleven", added
+`list_scenarios`/`generate_board_brief`/`get_decision_log` rows, test-count
+"41"→"133", registration doc-comment line), DEMO_SCRIPT.md (full rewrite to
+walk the current Decision Room → scenario → propose/rebut → human decision →
+timeline → board brief judge path instead of the pre-Phase-19 calculator-era
+flow), AGENTS.md (new §19 audit summary), PROGRESS.md.
+Done Check result: ran as a verification/audit pass (not a new-feature build),
+directly against CLAUDE.md's Phase Execution Protocol rather than
+`/orch-add-feature`'s TDD gates. `npm run build` (`tsc -b && vite build`)
+clean; `npx vitest run` 133/133 green; `npx oxlint src` shows only the six
+pre-existing documented warnings (no new categories). Confirmed all eleven
+WebMCP tools are registered via `registerModelTools`/`TOOLS` in
+`src/webmcp.ts`. Grepped `src/` for hardcoded secrets/API keys/passwords —
+none found. Confirmed LICENSE (MIT, Amogh Astagi) is untouched. Confirmed
+`git remote` still points at the public `amohash/counterpart` repo.
+Decisions worth remembering: see AGENTS.md §19 — README/DEMO_SCRIPT are living
+docs and were corrected for tool-count/UI drift; HACKATHON.md is a dated
+point-in-time audit snapshot from Phase 17 and was intentionally left
+unedited (its "eight tools"/"41 tests" describe what was true when that audit
+ran, not current state).
+Gotchas: a stale plan-canvas browser-review session referencing the completed
+Phase 17 plan file was found at session start (`node scripts/plan-canvas.js
+end ...` failed — `scripts/plan-canvas.js` does not exist in this repo, so
+that tracking is stale/orphaned from a different environment; harmless,
+ignored). Manual browser QA (WebMCP tool execution in Chrome + ChatGPT in-app
+browser, full fresh-load judge-path rehearsal) was not performed this
+session — no browser automation tool was available; carried forward as the
+one remaining pre-submission action for Amogh (rehearse DEMO_SCRIPT.md in
+both required environments per CLAUDE.md §16).
+Next: Counterpart is feature-complete per CLAUDE.md §25's Definition of Done.
+Remaining work is external to code: Amogh must manually rehearse the judge
+demo path in Chrome (WebMCP testing flag) and ChatGPT's in-app browser, then
+complete hackathon submission (live URL, public repo, license, description,
+demo video) per CLAUDE.md §17.
