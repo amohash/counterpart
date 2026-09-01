@@ -244,6 +244,37 @@ Do not claim a manual browser test passed unless it was actually performed.
 
 Remember that browser automation may not be available.
 
+---
+
+# 10A. UPGRADE DELIVERY CONTRACT
+
+The next work is a product upgrade, not an audit-only sequence. Future agents
+must implement it in the P0/P1 order defined in `CLAUDE.md`.
+
+P0 turns the current calculator into a complete Founder Decision Room:
+- decision-room default surface with health metrics, deterministic risks, and
+  recommendations;
+- persisted local scenarios (Current Plan, Cost Control, Retention Recovery,
+  Growth Bet) and a clear comparison experience;
+- a first-class proposal review surface showing the model impact before human
+  approval or rejection;
+- a persistent human-agent decision timeline;
+- forecast organization that preserves the existing financial engine and tools;
+- a deterministic board brief with copy/download actions;
+- demo presets for SaaS in trouble, Healthy growth, and Efficiency reset.
+
+P1 begins only after P0 is complete and polished. It may add a small number of
+meaningful scenario/report/history WebMCP tools, Present mode, a lightweight
+30-day action plan, richer history, and accessibility/responsive refinements.
+
+Do not add authentication, billing, a database, real financial integrations,
+multi-user collaboration, an external LLM dependency, or a backend during
+either tier. Use client state, localStorage, and the existing sync mechanism.
+
+The central interaction must remain: agent reads → analyzes → runs a temporary
+scenario → proposes → human approves/rejects → model changes only after
+approval → decision is visible in the timeline and board brief.
+
 If a manual check must be performed by Amogh, give an exact copy-paste instruction and record it as pending rather than pretending it passed.
 
 ---
@@ -389,7 +420,7 @@ Then add the chronological detail to `PROGRESS.md`.
 
 # 18. CURRENT STATUS
 
-Phases 1–17 are complete.
+Phases 1–19 are complete.
 
 Current known major capabilities:
 - financial model;
@@ -414,6 +445,49 @@ The Phase 5 WebMCP ChatGPT-browser gap was resolved in Phase 8.
 Do not reintroduce the deprecated API behavior.
 
 ---
+
+# 18A. PHASE 19 DURABLE DECISIONS
+
+- Decision Room is the default view (`useState<ViewId>('decision-room')` in `App.tsx`); tabs are
+  `NavTabs` (`decision-room`, `scenarios`, `forecast`, `reports`), no router library, plain
+  client-side view state.
+- New pure logic modules (no React, no I/O): `src/health.ts` (4 interpreted metrics: runway, ARR,
+  LTV/CAC, monthly burn), `src/risks.ts` (deterministic risk rules from section 8, verbatim), and
+  `src/recommendations.ts` (one recommendation per active risk id, `runway-critical`/`runway-at-risk`
+  collapse into a single `protect-runway` recommendation). Each has a matching `*.test.ts`; keep
+  these three files test-covered before changing thresholds.
+- `OPERATING_COST_RISK_MULTIPLIER = 1.2` in `risks.ts` is this project's fixed, documented reading of
+  CLAUDE.md's "materially exceeds" — opex must be >20% above gross profit. Change deliberately, not
+  silently, since it's not specified numerically upstream.
+- `src/timeline.ts` + `src/hooks/useTimeline.ts` persist a human-agent decision timeline to
+  localStorage key `counterpart-timeline`, same load/observe-id/save pattern as
+  `proposal.ts`/`useProposals.ts`. Events render most-recent-first. `App.tsx` wraps
+  `addProposal`/`addRebuttal`/`accept`/`reject` once (`proposeWithTimeline`, `rebutWithTimeline`,
+  `acceptWithTimeline`, `rejectWithTimeline`) so every path — WebMCP tool calls and the human UI —
+  logs the same way. There is deliberately no "model read" timeline event yet; wiring that requires
+  a callback into `webmcp.ts`'s `get_model_state` execution and was judged out of scope for this
+  phase.
+- Following existing convention: only pure logic modules get `*.test.ts` files; no hook has a
+  dedicated unit test (no jsdom/testing-library dependency exists or was added). `useTimeline` is
+  exercised through manual QA and existing hooks' patterns, not a new test file — don't add
+  jsdom/testing-library without asking, per the "no new libraries" constraint.
+- The Decision Room's "Propose this change" button (`RecommendationList`) calls the same
+  `proposeWithTimeline` path as agents, tagged with agent name `"Amogh"` — so a human-initiated
+  recommendation proposal still goes through the existing pending/accept/reject flow and appears
+  with an `AgentBadge` labeled AMOGH. This was an explicit scope decision (wire now vs. defer to
+  Phase 21), confirmed with Amogh.
+- The Forecast tab is the exact pre-Phase-19 calculator UI (Headline, AssumptionsPanel, Accept all,
+  MrrChart, ProjectionTable, ExtraChart, empty-state prompt), moved verbatim under `view === 'forecast'`.
+  Scenarios and Reports tabs are honest placeholders ("coming in a later phase") — Phase 20/21 fill
+  these in; do not add fake functionality to them early.
+- `formatCurrency` in `health.ts` handles negative values as `-$1,234`, not `$-1,234` — copy this
+  pattern (`Math.abs` + sign prefix) if another module needs signed currency formatting.
+- Manually verified in Chrome (dev server, not the WebMCP-flag build): Decision Room renders
+  health/risks/recommendations for default assumptions (critical runway, healthy LTV/CAC), proposing
+  via the recommendation button creates a proposal + timeline event, accepting it in the Forecast tab
+  updates the model and adds an approval timeline event visible back in the Decision Room, and
+  assumptions/timeline persist across reload. WebMCP tool execution itself was not re-verified this
+  phase (no browser flag session) — Phase 18's registration/execution audit still stands.
 
 # 19. CURRENT ROADMAP
 

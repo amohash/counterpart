@@ -243,3 +243,24 @@ Done Check result: all eight tools are registered and executed in the test suite
 Decisions worth remembering: registration audit must remain in sync with the complete tool list; proposals are still created only through pending approval and never mutate assumptions during a tool call.
 Gotchas: this phase's browser-independent audit verifies registration and execution mechanics; live Chrome/ChatGPT tool testing remains a final QA activity.
 Next: Phase 19
+
+## Phase 19 — DONE (2026-08-31)
+Files created/changed: src/{health,risks,recommendations,timeline}.ts (+matching .test.ts),
+src/hooks/useTimeline.ts, src/components/NavTabs.tsx,
+src/components/decision-room/{HealthGrid,RiskList,RecommendationList,DecisionTimeline}.tsx,
+src/App.tsx (restructured), AGENTS.md, PROGRESS.md.
+Done Check result: 65 tests green, `tsc -b` and `npm run build` clean, `oxlint` shows only the two
+pre-existing `useWebmcp.ts` ref warnings. Manual Chrome QA (dev server): Decision Room is the default
+view and shows critical runway / healthy LTV+CAC for default assumptions within seconds; clicking
+"Propose this change" created a pending proposal and a timeline event; accepting it in the Forecast
+tab updated monthly opex, the model/table, and added an approval timeline event visible back in the
+Decision Room; assumptions and timeline persisted across a reload with no console errors.
+Decisions worth remembering: see AGENTS.md section 18A (Phase 19 durable decisions) for the full
+list — deterministic health/risk/recommendation modules, timeline persistence pattern, the
+human-recommendation-propose wiring decision, and the Forecast/Scenarios/Reports tab split.
+Gotchas: the default assumptions immediately produce a 1-month (critical) runway, since burn is
+monotonically non-decreasing under growth assumptions — an "at-risk" (3-6 month) runway test fixture
+needs a declining-customer-base scenario (high churn) to land in that window, not just higher opex;
+also caught and fixed a `$-13,545`-style negative-currency formatting bug in `health.ts` during
+manual QA before it shipped.
+Next: Phase 20
