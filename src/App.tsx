@@ -4,14 +4,17 @@ import { useEffect, useState } from 'react';
 import { AssumptionsPanel } from './components/AssumptionsPanel';
 import { DecisionTimeline } from './components/decision-room/DecisionTimeline';
 import { HealthGrid } from './components/decision-room/HealthGrid';
+import { PendingDecisions } from './components/decision-room/PendingDecisions';
 import { RecommendationList } from './components/decision-room/RecommendationList';
 import { RiskList } from './components/decision-room/RiskList';
 import { ExtraChart } from './components/ExtraChart';
 import { Headline } from './components/Headline';
 import { MrrChart } from './components/MrrChart';
 import { NavTabs, type ViewId } from './components/NavTabs';
+import { PresetSwitcher } from './components/PresetSwitcher';
 import { ProjectionTable } from './components/ProjectionTable';
 import { QuestionCard } from './components/QuestionCard';
+import { BoardBrief } from './components/reports/BoardBrief';
 import { ScenarioWorkspace, type ScenarioDraft } from './components/scenarios';
 import { WebmcpBadge } from './components/WebmcpBadge';
 import { useAnnotations } from './hooks/useAnnotations';
@@ -26,7 +29,9 @@ import { useTimeline } from './hooks/useTimeline';
 import { useWebmcp } from './hooks/useWebmcp';
 import { computeHealthMetrics } from './health';
 import type { Assumptions } from './model';
+import type { Proposal } from './proposal';
 import { computeRecommendations, type Recommendation } from './recommendations';
+import { detectActivePreset, type Preset } from './presets';
 import { computeRisks } from './risks';
 import { draftToOverrides, toScenarioViewModels } from './scenarioViewModel';
 
@@ -91,6 +96,14 @@ function App() {
     }
   };
 
+  const exploreImpactWithTimeline = (proposal: Proposal) => {
+    addEvent(
+      HUMAN_ACTOR,
+      'scenario',
+      `explored the impact of the proposed ${proposal.targetId} change before deciding.`,
+    );
+  };
+
   const activateScenarioWithTimeline = (id: string) => {
     scenarios.activate(id);
     const scenario = scenarios.scenarios.find((item) => item.id === id);
@@ -120,6 +133,18 @@ function App() {
     setSelectedScenarioId('current-plan');
     addEvent(HUMAN_ACTOR, 'scenario', 'reset saved scenarios to the seeded defaults.');
   };
+
+  const boardBriefGeneratedWithTimeline = (scenarioName: string) => {
+    addEvent(HUMAN_ACTOR, 'report', `generated a board brief using the "${scenarioName}" scenario.`);
+  };
+
+  const loadPresetWithTimeline = (preset: Preset) => {
+    replaceAssumptions(preset.assumptions);
+    scenarios.activate(preset.scenarioId);
+    addEvent(HUMAN_ACTOR, 'preset', preset.timelineSentence);
+  };
+
+  const activePresetId = detectActivePreset(assumptions)?.id;
 
   const toggleComparedWithTimeline = (id: string) => {
     const scenario = scenarios.scenarios.find((item) => item.id === id);
@@ -177,7 +202,10 @@ function App() {
               </div>
               <WebmcpBadge isDetected={isWebmcpDetected} />
             </div>
-            <NavTabs active={view} onChange={setView} />
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <NavTabs active={view} onChange={setView} />
+              <PresetSwitcher activePresetId={activePresetId} onSelect={loadPresetWithTimeline} />
+            </div>
           </div>
         </header>
 
@@ -197,6 +225,14 @@ function App() {
                 <div className="flex flex-col gap-5">
                   <RiskList risks={risks} />
                   <RecommendationList recommendations={recommendations} onPropose={handleRecommendationPropose} />
+                  <PendingDecisions
+                    proposals={proposals}
+                    assumptions={assumptions}
+                    output={output}
+                    onAccept={acceptWithTimeline}
+                    onReject={rejectWithTimeline}
+                    onExploreImpact={exploreImpactWithTimeline}
+                  />
                 </div>
                 <DecisionTimeline events={events} />
               </div>
@@ -284,9 +320,12 @@ function App() {
           )}
 
           {view === 'reports' && (
-            <section className="rounded-xl border border-dashed border-[#aeb4ae] bg-[#f8f7f3] p-6 text-sm text-[#526059]">
-              The board brief is coming in a later phase.
-            </section>
+            <BoardBrief
+              scenarios={scenarios.scenarios}
+              activeScenarioId={scenarios.activeScenarioId}
+              proposals={proposals}
+              onGenerated={boardBriefGeneratedWithTimeline}
+            />
           )}
         </main>
       </div>

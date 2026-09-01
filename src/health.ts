@@ -11,15 +11,18 @@ export interface HealthMetric {
   interpretation: string;
 }
 
-function formatMonths(months: number): string {
+/** Shared number formatters for financial values across the Decision Room,
+ * Pending Decisions, and Board Brief — keep these as the single source of
+ * truth rather than re-deriving formatting rules per surface. */
+export function formatMonths(months: number): string {
   return Number.isFinite(months) ? `${months} mo` : 'Infinite';
 }
 
-function formatRatio(value: number): string {
+export function formatRatio(value: number): string {
   return Number.isFinite(value) ? `${value.toFixed(1)}x` : '∞';
 }
 
-function formatCurrency(value: number): string {
+export function formatCurrency(value: number): string {
   const rounded = Math.round(value);
   const formatted = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(Math.abs(rounded));
   return rounded < 0 ? `-$${formatted}` : `$${formatted}`;

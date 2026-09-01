@@ -287,3 +287,27 @@ shipping and corrected to Critical/At risk/Healthy, matching CLAUDE.md section 8
 Also discovered AGENTS.md's section 19 roadmap list was stale (referenced Phase 20-24 names from
 before CLAUDE.md's Phase 17-24 rewrite); corrected it in this Phase's handoff.
 Next: Phase 21
+
+## Phase 21 — DONE (2026-08-31)
+Files created/changed: src/proposalImpact.ts (+.test.ts), src/boardBrief.ts (+.test.ts),
+src/presets.ts (+.test.ts), src/health.ts (exported formatCurrency/formatMonths/formatRatio),
+src/components/decision-room/PendingDecisions.tsx, src/components/reports/BoardBrief.tsx,
+src/components/PresetSwitcher.tsx, src/App.tsx (wired all three), AGENTS.md, PROGRESS.md.
+Done Check result: 106 tests green (18 new), `tsc -b`, `npm run build`, and `oxlint` (only the two
+pre-existing useWebmcp.ts ref warnings plus one pre-existing App.tsx set-state-in-effect warning,
+none new) all clean. Manual Chrome QA (dev server): loaded "SaaS in trouble" preset (assumptions
+reset, button marked pressed, timeline logged); proposed the recommendation and saw a Pending
+Decisions card with current->proposed values, agent badge, and rationale; Explore impact showed
+correct before/after runway/ARR/LTV-CAC/burn; Approve applied the change, cleared the card, and
+updated Decision Room health metrics; Reports tab rendered a correct Markdown board brief reflecting
+the approved decision; switching the brief's scenario selector to Cost Control changed only the
+report, verified by reopening Decision Room and confirming Current Plan's live metrics were
+untouched; Copy showed "Copied" feedback; no unexpected console errors.
+Decisions worth remembering: see AGENTS.md section 18B (Phase 21 durable decisions) — the
+proposalImpact/boardBrief/presets pure-logic design, the shared health.ts formatters, all three
+demo presets activating scenarioId 'current-plan' (deliberate, not an oversight), and the
+Pending Decisions/Board Brief/Preset Switcher wiring into App.tsx.
+Gotchas: caught and fixed a real StrictMode double-invocation bug where the "Explore impact"
+timeline log lived inside a setState updater function and fired twice per click in dev; moved the
+side effect outside the updater before shipping. See AGENTS.md 18B for the reusable pattern.
+Next: Phase 22
