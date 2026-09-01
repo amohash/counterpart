@@ -546,3 +546,24 @@ Gotchas: none new. Manual browser QA was not performed this session (no browser 
 access) — flagged as a pending Phase 24 QA item, same historical pattern as prior phases.
 Next: Phase 23 remaining P1 candidates (richer audit/history view, extra comparison charts,
 accessibility refinements) — save_scenario/compare_scenarios stay deprioritized.
+
+## Phase 23 (partial, continued 8) — DONE (2026-08-31)
+Files created/changed: src/timeline.ts (+filterTimelineEvents), src/timeline.test.ts (+3 tests),
+src/components/decision-room/DecisionTimeline.tsx (actor-filter select), AGENTS.md, PROGRESS.md.
+Done Check result: implemented a Gate-1-approved, deliberately minimal slice of the "richer
+audit/history view" P1 candidate — an actor filter for the Decision timeline — via
+`/orch-add-feature`. TDD: wrote 3 new assertions in timeline.test.ts first (all-actors passthrough,
+actor match, no-match empty array), confirmed red (`filterTimelineEvents is not a function`), then
+implemented the pure `filterTimelineEvents(events, actor)`. 126 tests green (3 new), `tsc -b` and
+`npm run build` clean, `oxlint` shows only the six pre-existing documented warnings (no new
+categories). code-reviewer agent returned 0 critical/high/medium findings, 1 LOW note (stale
+`<select>` value if the actor set changes while filtered — non-blocking, actor names are static for
+the app's lifetime); verdict APPROVE.
+Decisions worth remembering: see AGENTS.md section 18L — local-only (unpersisted, non-cross-tab)
+`actorFilter` state in DecisionTimeline.tsx, the actor `<select>` only renders with >1 distinct
+actor, and the deferred (not abandoned) further slices: free-text search, event-type filter,
+expand/collapse of long detail text.
+Gotchas: none new. Manual browser QA not performed this session (no browser automation access) —
+flagged as a pending Phase 24 QA item alongside the existing backlog.
+Next: Phase 23 remaining P1 candidates (further audit/history view slices, extra comparison charts,
+accessibility refinements) — save_scenario/compare_scenarios stay deprioritized.

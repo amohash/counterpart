@@ -41,6 +41,13 @@ export function createTimelineEvent(
   };
 }
 
+/** Filters a timeline to events from one actor, or returns it unchanged when
+ * `actor` is `'all'`. Pure — used by the Decision timeline's actor filter. */
+export function filterTimelineEvents(events: TimelineEvent[], actor: string): TimelineEvent[] {
+  if (actor === 'all') return events;
+  return events.filter((event) => event.actor === actor);
+}
+
 /** Keeps the in-process id counter ahead of any events loaded from
  * localStorage, mirroring proposal.ts's observeProposalIds. */
 export function observeTimelineEventIds(events: TimelineEvent[]): void {

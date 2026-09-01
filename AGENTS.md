@@ -743,6 +743,39 @@ and `npm run build` clean, `oxlint` shows only the six pre-existing documented w
   charts, accessibility refinements. `save_scenario`/`compare_scenarios` remain deprioritized per
   18D/18F.
 
+## 18L. PHASE 23 (CONTINUED 8) — DECISION TIMELINE ACTOR FILTER (SCOPED SLICE OF "RICHER AUDIT/HISTORY VIEW")
+
+Implemented a minimal, Gate-1-approved slice of the "enhanced local audit/history view" P1 candidate
+via `/orch-add-feature`: an actor filter for the Decision timeline. TDD: added 3 assertions to
+`timeline.test.ts` first (`'all'` returns unfiltered, matching actor filters correctly, no-match
+returns `[]`), confirmed red (`filterTimelineEvents is not a function`), then implemented the pure
+`filterTimelineEvents(events, actor)` in `src/timeline.ts`. 126 tests green (3 new), `tsc -b` and
+`npm run build` clean, `oxlint` shows only the same six pre-existing documented warnings (no new
+categories). `code-reviewer` agent returned 0 critical/high/medium findings, 1 LOW note (APPROVE).
+
+- `filterTimelineEvents` is pure and lives in `timeline.ts` alongside `createTimelineEvent`/
+  `observeTimelineEventIds` — no new file, mirrors how `actionPlan.ts`/`presentMode.ts` keep pure
+  logic separately testable from their consuming component.
+- `DecisionTimeline.tsx` now holds local-only `actorFilter` state (`useState`, default `'all'`) — not
+  persisted, not lifted to `App.tsx`, not synced cross-tab; it is view-only UI state scoped to the
+  timeline panel, same category as `useEffect`-free ephemeral UI state elsewhere in the app. The
+  `<select>` of distinct actors (derived via `useMemo` from `events`) is only rendered when there is
+  more than one distinct actor, so it doesn't appear on a fresh/empty timeline.
+- Known LOW-severity edge case (from code review, not fixed — judged non-blocking): if the timeline is
+  cleared/reset with a different actor set while a non-`'all'` filter is selected, the `<select>` can
+  keep showing a stale selected value not present in the current `<option>` list; the empty state
+  ("No events from this actor yet.") still renders correctly, so there is no crash or blank-looking
+  panel — just a possible surprise. Not worth fixing given actor names (`'Amogh'`/`'Growth'`/`'Risk'`/
+  `'Counterpart'`) are static for the app's lifetime and Reset demo doesn't change the actor set.
+- Explicit non-goals for this slice (deferred, not abandoned): free-text search across
+  sentence/detail, an event-type/icon filter, and expand/collapse of long `detail` text. Any of these
+  could be picked up as a further scoped slice of "richer audit/history view" in a future session.
+- Manual browser QA not performed this session (no browser automation access) — flagged as a pending
+  Phase 24 QA item alongside the existing backlog (WebMCP tools, action-plan toggle, Present mode).
+- Remaining open Phase 23 candidates, in priority order: further audit/history view slices (search,
+  event-type filter), extra comparison charts, accessibility refinements. `save_scenario`/
+  `compare_scenarios` remain deprioritized per 18D/18F.
+
 ## 18J. PHASE 23 (CONTINUED 6) — 30-DAY ACTION PLAN RE-CONFIRMED AT GATE 1, STILL NOT IMPLEMENTED
 
 A second planning-only session (`/orch-add-feature`, stopped at Gate 1 again, per this session's

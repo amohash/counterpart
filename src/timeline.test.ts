@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest';
-import { createTimelineEvent, observeTimelineEventIds, type TimelineEvent } from './timeline';
+import {
+  createTimelineEvent,
+  filterTimelineEvents,
+  observeTimelineEventIds,
+  type TimelineEvent,
+} from './timeline';
 
 describe('createTimelineEvent', () => {
   test('assigns an incrementing id and an ISO timestamp', () => {
@@ -15,6 +20,27 @@ describe('createTimelineEvent', () => {
     expect(event.icon).toBe('rebuttal');
     expect(event.sentence).toBe('Rebutted the proposal.');
     expect(event.detail).toBe('Runway would drop below 3 months.');
+  });
+});
+
+describe('filterTimelineEvents', () => {
+  const events: TimelineEvent[] = [
+    { id: 'event-1', timestamp: new Date().toISOString(), actor: 'Amogh', icon: 'approve', sentence: 'a' },
+    { id: 'event-2', timestamp: new Date().toISOString(), actor: 'Growth', icon: 'proposal', sentence: 'b' },
+    { id: 'event-3', timestamp: new Date().toISOString(), actor: 'Risk', icon: 'rebuttal', sentence: 'c' },
+    { id: 'event-4', timestamp: new Date().toISOString(), actor: 'Growth', icon: 'proposal', sentence: 'd' },
+  ];
+
+  test('returns all events unfiltered when actor is "all"', () => {
+    expect(filterTimelineEvents(events, 'all')).toEqual(events);
+  });
+
+  test('returns only events matching the given actor', () => {
+    expect(filterTimelineEvents(events, 'Growth')).toEqual([events[1], events[3]]);
+  });
+
+  test('returns an empty array when no events match the actor', () => {
+    expect(filterTimelineEvents(events, 'Counterpart')).toEqual([]);
   });
 });
 
