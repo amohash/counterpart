@@ -644,8 +644,11 @@ Bloomberg/Stripe/Ramp/Mercury/Linear/Wealthfront, monochrome with exactly one
 accent color. This entry covers the final, shipped state — the round-1 work
 is folded in, not separately preserved.
 Presentation-layer only: no model, WebMCP, or logic files changed. New
-dependencies: `@fontsource/fraunces`, `@fontsource-variable/inter`,
-`@fontsource/ibm-plex-mono` (self-hosted fonts, no other library changes).
+dependencies: `@fontsource-variable/newsreader`,
+`@fontsource-variable/ibm-plex-sans`, `@fontsource/ibm-plex-mono`
+(self-hosted fonts, no other library changes — see AGENTS.md §20 for why
+the first-pass Fraunces/Inter choice was swapped post-commit after the
+design hook flagged both as overused AI-UI fonts).
 Files created/changed: `src/main.tsx` (font imports), `src/index.css` (new
 palette custom properties, `.card-lift`, `.font-display`, mono
 `.tabular-nums`), `DESIGN.md` (fully rewritten, not incrementally edited),

@@ -18,7 +18,7 @@
 
   color: var(--ink);
   background: var(--canvas);
-  font-family: "Inter Variable", "Inter", "Segoe UI", sans-serif;
+  font-family: "IBM Plex Sans Variable", "IBM Plex Sans", "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -80,10 +80,10 @@ input:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
-/* The single display voice: used only for the product title and section
-   headings that anchor a surface. Never for body copy or buttons. */
+/* The single display voice: used only for the product title. Never for
+   body copy, buttons, or recurring section headings. */
 .font-display {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: "Newsreader Variable", "Newsreader", Georgia, serif;
   font-optical-sizing: auto;
 }
 

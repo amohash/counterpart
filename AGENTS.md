@@ -1002,12 +1002,19 @@ variant" instruction to future agents.
 
 **What changed (presentation layer only, zero model/logic/WebMCP changes):**
 - **New fonts, self-hosted via npm** (not a CDN, not a system-face fallback):
-  `@fontsource/fraunces` (display, masthead only), `@fontsource-variable/inter`
-  (body/UI, replaces Avenir Next), `@fontsource/ibm-plex-mono` (every
-  financial figure — replaces `font-variant-numeric` alone on `.tabular-nums`
-  with a real monospace face). Imported once in `src/main.tsx` above
-  `./index.css`. These are the only new dependencies added; no other library
-  changes.
+  `@fontsource-variable/newsreader` (display, masthead only),
+  `@fontsource-variable/ibm-plex-sans` (body/UI, replaces Avenir Next),
+  `@fontsource/ibm-plex-mono` (every financial figure — replaces
+  `font-variant-numeric` alone on `.tabular-nums` with a real monospace
+  face). Imported once in `src/main.tsx` above `./index.css`. These are the
+  only new dependencies added; no other library changes. **Note:** the
+  first pass shipped Fraunces + Inter Variable; the `impeccable` design hook
+  flagged both as `overused-font` (Inter, Fraunces, Roboto, Geist, Plus
+  Jakarta Sans, Space Grotesk are called out by name as fonts so common in
+  AI-generated UIs they read as a tell) — directly contradicting the
+  session's "not typical AI UI" instruction, so they were swapped rather
+  than suppressed. IBM Plex Sans also unifies with the existing IBM Plex
+  Mono into one coherent family instead of two unrelated typefaces.
 - **Monochrome ink/paper scale + exactly one accent.** New CSS custom
   properties in `src/index.css` (`--ink`, `--ink-soft`, `--ink-faint`,
   `--canvas`, `--surface`, `--surface-sunken`, `--rule`, `--rule-strong`,

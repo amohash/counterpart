@@ -15,24 +15,24 @@ colors:
   accent-tint: "#f4ecd8"
 typography:
   display:
-    fontFamily: "Fraunces, Georgia, serif"
+    fontFamily: "Newsreader, Georgia, serif"
     fontSize: "26px"
     fontWeight: 600
     lineHeight: 1.15
     letterSpacing: "-0.01em"
   title:
-    fontFamily: "Inter Variable, Inter, Segoe UI, sans-serif"
+    fontFamily: "IBM Plex Sans Variable, IBM Plex Sans, Segoe UI, sans-serif"
     fontSize: "14px"
     fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "-0.01em"
   body:
-    fontFamily: "Inter Variable, Inter, Segoe UI, sans-serif"
+    fontFamily: "IBM Plex Sans Variable, IBM Plex Sans, Segoe UI, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "Inter Variable, Inter, Segoe UI, sans-serif"
+    fontFamily: "IBM Plex Sans Variable, IBM Plex Sans, Segoe UI, sans-serif"
     fontSize: "10px"
     fontWeight: 600
     lineHeight: 1.2
@@ -94,8 +94,8 @@ by weight, inversion, and text label, never by introducing a second hue.
 **Key Characteristics:**
 - Near-black ink on warm-white paper; pure white card surfaces for crisp
   figure/ground contrast against the sunken canvas
-- A serif display face (Fraunces) reserved for the product title and
-  section-anchoring headings only — the one moment of editorial character
+- A serif display face (Newsreader) reserved for the product title only —
+  the one moment of editorial character
 - A real monospace face (IBM Plex Mono) for every financial figure, not just
   `font-variant-numeric` — numbers should look like they came off a terminal
 - Exactly one accent (`--accent`, muted bronze-gold) for every human-actionable
@@ -146,8 +146,8 @@ human can act on that exact element right now.
 
 ## Typography
 
-**Display Font:** Fraunces (self-hosted, headings only)
-**Body/UI Font:** Inter Variable (self-hosted)
+**Display Font:** Newsreader (self-hosted, masthead only)
+**Body/UI Font:** IBM Plex Sans Variable (self-hosted)
 **Data Font:** IBM Plex Mono (self-hosted, every tabular financial figure)
 
 **Character:** A serif display voice signals institutional gravity at the
@@ -155,16 +155,16 @@ masthead and section anchors; everything else is a clean, restrained grotesk;
 every number a person compares digit-by-digit renders in real monospace.
 
 ### Hierarchy
-- **Display** (Fraunces 600–700, 20–26px, 1.15, -0.01em): The product title
+- **Display** (Newsreader 600–700, 20–26px, 1.15, -0.01em): The product title
   only — one masthead moment, not a recurring section treatment.
-- **Title** (Inter 600, 14px, 1.3): Section headers (Assumptions, charts,
+- **Title** (IBM Plex Sans 600, 14px, 1.3): Section headers (Assumptions, charts,
   proposals, timeline).
-- **Body** (Inter 400, 14px, 1.5): Rationales, questions, notes, table values.
-- **Label** (Inter 600, 10px, 0.1em tracking, uppercase): Metric names, time
+- **Body** (IBM Plex Sans 400, 14px, 1.5): Rationales, questions, notes, table values.
+- **Label** (IBM Plex Sans 600, 10px, 0.1em tracking, uppercase): Metric names, time
   ranges, data cadence.
 - **Mono** (IBM Plex Mono, tabular): Every changing financial value — hero
   metric figures, table cells, impact-row before/after pairs. This is the
-  system's numeric voice; it never competes with Fraunces, which is reserved
+  system's numeric voice; it never competes with Newsreader, which is reserved
   for the masthead alone.
 
 **The Numeric Stability Rule.** All financial values and model inputs render
@@ -267,7 +267,7 @@ etc.) regardless of the visual treatment — never color alone.
 ### Do:
 - **Do** keep the ink/paper/accent system to exactly three color roles —
   everything else is weight, inversion, or the sunken tone.
-- **Do** use Fraunces only at the masthead and section anchors; never for
+- **Do** use Newsreader only at the masthead; never for
   body copy, buttons, or labels.
 - **Do** render every financial figure in IBM Plex Mono.
 - **Do** use Lucide icons only when they clarify role or action.
@@ -291,5 +291,5 @@ etc.) regardless of the visual treatment — never color alone.
   instrument-panel language; pills stay pills only for status badges and
   icon-only circular controls.
 - **Don't** fall back to a system sans (Arial/Helvetica/platform default)
-  for the display voice — Fraunces is self-hosted specifically so it never
+  for the display voice — Newsreader is self-hosted specifically so it never
   degrades to a system face.
