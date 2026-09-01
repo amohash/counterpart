@@ -525,3 +525,24 @@ Gotchas: none (no code written).
 Next: implement the approved 30-day action plan (Gate 2 = commit confirmation after TDD + review),
 then remaining Phase 23 candidates (richer audit/history view, extra comparison charts,
 accessibility refinements).
+
+## Phase 23 (partial, continued 7) — DONE (2026-08-31)
+Files created/changed: src/actionPlan.ts (+.test.ts), src/hooks/useActionPlan.ts,
+src/components/decision-room/ActionPlan.tsx, src/timeline.ts (+'plan' TimelineIconKey),
+src/components/decision-room/DecisionTimeline.tsx (+ListChecks icon), src/App.tsx (wired
+useActionPlan + ActionPlan + toggleActionPlanItemWithTimeline), AGENTS.md, PROGRESS.md.
+Done Check result: implemented the 30-day action plan approved in the prior planning-only sessions
+(18I/18J) via `/orch-add-feature`, re-confirmed at Gate 1 before writing code. TDD: wrote
+actionPlan.test.ts first (4 assertions: week ordering/1-indexing, stable plan-<recommendationId>
+ids, Week-4 cap with 5+ recommendations, empty input), then implemented computeActionPlanItems.
+123 tests green (4 new), `tsc -b` and `npm run build` clean, `oxlint` shows only the six
+pre-existing documented warnings (no new categories). code-reviewer agent returned 0
+critical/high/medium/low findings (APPROVE).
+Decisions worth remembering: see AGENTS.md section 18K for the full list — completion-map-only
+persistence (items always recomputed live from recommendations), the *WithTimeline wrapper pattern
+extended to action-plan toggles, and the deliberate choice not to add a WebMCP tool for this
+human-only checklist.
+Gotchas: none new. Manual browser QA was not performed this session (no browser automation
+access) — flagged as a pending Phase 24 QA item, same historical pattern as prior phases.
+Next: Phase 23 remaining P1 candidates (richer audit/history view, extra comparison charts,
+accessibility refinements) — save_scenario/compare_scenarios stay deprioritized.

@@ -703,6 +703,46 @@ Approved plan, to implement in a future session (Gate 2 = commit confirmation af
   (only the completion map persists — items always recompute live from current recommendations); no
   due-date/calendar logic beyond the fixed Week 1-4 buckets.
 
+## 18K. PHASE 23 (CONTINUED 7) — 30-DAY ACTION PLAN IMPLEMENTED
+
+Implemented the plan approved in 18I/18J via `/orch-add-feature`, re-confirmed at Gate 1 before
+writing code. TDD: wrote `actionPlan.test.ts` first (4 assertions: week ordering/1-indexing, stable
+`plan-<recommendationId>` ids, a Week-4 cap with 5+ recommendations, empty input), then implemented
+`src/actionPlan.ts`'s pure `computeActionPlanItems(recommendations)`. 123 tests green (4 new), `tsc -b`
+and `npm run build` clean, `oxlint` shows only the six pre-existing documented warnings (four
+`useWebmcp.ts` ref warnings, two `App.tsx` set-state-in-effect warnings) — no new categories.
+`code-reviewer` agent returned 0 critical/high/medium/low findings (APPROVE).
+
+- `src/hooks/useActionPlan.ts` persists only `Record<itemId, boolean>` to a new localStorage key
+  `counterpart-action-plan-completion`, same load/try-catch-fallback/save pattern as
+  `useTimeline.ts`/`useScenarios.ts`. Items themselves are never persisted — always recomputed live
+  from the current `recommendations` array, so a resolved risk's item disappears on next render even
+  if it was checked off.
+- `TimelineIconKey` (`src/timeline.ts`) gained `'plan'`; `DecisionTimeline.tsx`'s `ICONS` map maps it
+  to Lucide's `ListChecks` — purely additive, no existing icon key changed.
+- `src/components/decision-room/ActionPlan.tsx` renders the plan grouped by week with one checkbox
+  per item; toggling calls a prop callback (`onToggle`), not `useActionPlan` directly, so `App.tsx`
+  wraps it as `toggleActionPlanItemWithTimeline` (actor `HUMAN_ACTOR`/`'Amogh'`, icon `'plan'`,
+  sentence `marked "<title>" complete`/`"<title>" incomplete`) — mirrors the existing `*WithTimeline`
+  pattern used everywhere else in `App.tsx`. Renders an empty state ("nothing to schedule right now")
+  when there are zero active recommendations.
+- Placed in the Decision Room directly below `RecommendationList`, since the plan is derived from the
+  same `recommendations` array already computed there — no new prop threading needed beyond what
+  `App.tsx` already had.
+- No new WebMCP tool (human-only checklist, per the approved plan's explicit non-goal); no separate
+  persisted item list; no due-date/calendar logic beyond the fixed Week 1-4 buckets.
+- Not wired into `useCrossTabSync` — consistent with existing behavior: that hook only live-syncs
+  `assumptions`/`proposals`; the timeline and scenario library are also localStorage-only without a
+  live cross-tab push, and completion state was judged low-value to add to the live-sync surface for
+  this Phase.
+- Manual QA not performed this session (no browser automation access) — this is a small, fully
+  pure-logic-plus-hook feature verified end-to-end by `actionPlan.test.ts` and the code-reviewer audit;
+  flagged as a pending Phase 24 QA item (checkbox toggle persists across reload, item disappears once
+  its risk resolves) alongside the existing WebMCP-tool manual-QA backlog.
+- Remaining open Phase 23 candidates, in priority order: richer audit/history view, extra comparison
+  charts, accessibility refinements. `save_scenario`/`compare_scenarios` remain deprioritized per
+  18D/18F.
+
 ## 18J. PHASE 23 (CONTINUED 6) — 30-DAY ACTION PLAN RE-CONFIRMED AT GATE 1, STILL NOT IMPLEMENTED
 
 A second planning-only session (`/orch-add-feature`, stopped at Gate 1 again, per this session's
@@ -725,8 +765,9 @@ this section previously listed a stale pre-rewrite roadmap — corrected here):
 - Phase 21: P0 Human approval workspace and board brief — DONE
 - Phase 22: P0 reliability, WebMCP integration, and demo readiness — DONE
 - Phase 23: P1 selective extensions — IN PROGRESS (`list_scenarios`, `generate_board_brief`, and
-  `get_decision_log` tools done; **Present mode implemented** — see section 18H; `save_scenario`,
-  `compare_scenarios`, 30-day plan, audit/history view, and extra charts/a11y remain)
+  `get_decision_log` tools done; **Present mode implemented** — see section 18H; **30-day action plan
+  implemented** — see section 18K; `save_scenario`, `compare_scenarios`, audit/history view, and
+  extra charts/a11y remain, in that priority order)
 - Phase 24: Submission and final demo readiness
 
 Do not skip to a later Phase unless Amogh explicitly instructs you to do so.

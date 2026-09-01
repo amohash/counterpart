@@ -2,6 +2,7 @@ import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { CheckCheck, MessageSquareText, Network, Presentation } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AssumptionsPanel } from './components/AssumptionsPanel';
+import { ActionPlan } from './components/decision-room/ActionPlan';
 import { DecisionTimeline } from './components/decision-room/DecisionTimeline';
 import { HealthGrid } from './components/decision-room/HealthGrid';
 import { PendingDecisions } from './components/decision-room/PendingDecisions';
@@ -18,6 +19,7 @@ import { QuestionCard } from './components/QuestionCard';
 import { BoardBrief } from './components/reports/BoardBrief';
 import { ScenarioWorkspace, type ScenarioDraft } from './components/scenarios';
 import { WebmcpBadge } from './components/WebmcpBadge';
+import { useActionPlan } from './hooks/useActionPlan';
 import { useAnnotations } from './hooks/useAnnotations';
 import { useCharts } from './hooks/useCharts';
 import { useCrossTabSync } from './hooks/useCrossTabSync';
@@ -58,6 +60,7 @@ function App() {
   const { charts, addChart } = useCharts();
   const { highlightedIds, highlight } = useHighlight();
   const { events, addEvent } = useTimeline();
+  const { completed: actionPlanCompleted, toggle: toggleActionPlanItem } = useActionPlan();
   const scenarios = useScenarios(assumptions);
   const [selectedScenarioId, setSelectedScenarioId] = useState(scenarios.activeScenarioId);
   // Follow whichever scenario becomes active (activate/duplicate/save-new/reset all
@@ -207,6 +210,15 @@ function App() {
     () => events,
   );
 
+  const toggleActionPlanItemWithTimeline = (itemId: string, title: string, nowComplete: boolean) => {
+    toggleActionPlanItem(itemId);
+    addEvent(
+      HUMAN_ACTOR,
+      'plan',
+      nowComplete ? `marked "${title}" complete` : `marked "${title}" incomplete`,
+    );
+  };
+
   const handleRecommendationPropose = (recommendation: Recommendation) => {
     if (!recommendation.proposal) return;
     proposeWithTimeline(
@@ -280,6 +292,11 @@ function App() {
                 <div className="flex flex-col gap-5">
                   <RiskList risks={risks} />
                   <RecommendationList recommendations={recommendations} onPropose={handleRecommendationPropose} />
+                  <ActionPlan
+                    recommendations={recommendations}
+                    completed={actionPlanCompleted}
+                    onToggle={toggleActionPlanItemWithTimeline}
+                  />
                   <PendingDecisions
                     proposals={proposals}
                     assumptions={assumptions}

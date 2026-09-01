@@ -5,6 +5,7 @@ import {
   FileText,
   FlaskConical,
   History,
+  ListChecks,
   Send,
   Sparkles,
   X,
@@ -22,6 +23,7 @@ const ICONS: Record<TimelineIconKey, LucideIcon> = {
   reject: X,
   report: FileText,
   preset: Sparkles,
+  plan: ListChecks,
 };
 
 function formatTime(timestamp: string): string {

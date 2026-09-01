@@ -7,7 +7,8 @@ export type TimelineIconKey =
   | 'approve'
   | 'reject'
   | 'report'
-  | 'preset';
+  | 'preset'
+  | 'plan';
 
 export interface TimelineEvent {
   id: string;
