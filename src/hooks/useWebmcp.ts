@@ -39,6 +39,7 @@ export function useWebmcp(
       addChart: (seriesIds, title) => actionsRef.current.addChart(seriesIds, title),
       highlight: (targetIds) => actionsRef.current.highlight(targetIds),
       getScenarios: () => getScenariosRef.current(),
+      logBoardBriefGenerated: (scenarioName) => actionsRef.current.logBoardBriefGenerated(scenarioName),
     };
 
     if (registerModelTools(modelActions)) {

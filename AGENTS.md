@@ -108,6 +108,7 @@ Existing tools:
 - `highlight`
 - `rebut_proposal`
 - `list_scenarios` (Phase 23)
+- `generate_board_brief` (Phase 23)
 
 Do not remove existing tools.
 
@@ -445,6 +446,41 @@ Then add the chronological detail to `PROGRESS.md`.
   complete" rule and Amogh's explicit "one P1 item per session" instruction. These remain open
   Phase 23 candidates for a future session, in that priority order.
 
+## 18E. PHASE 23 (CONTINUED) DURABLE DECISIONS — `generate_board_brief`
+
+- Added `generate_board_brief` as the second P1 item, chosen ahead of `save_scenario`/
+  `compare_scenarios` in the priority order recorded above: those two mostly duplicate value an
+  agent already gets from `list_scenarios` + `run_scenario`, while producing the board-ready update
+  (CLAUDE.md section 1 item 10; section 19 demo step 15) was still human-only — the single largest
+  remaining WebMCP-Leverage gap in the read → analyze → propose → approve → **board brief** loop.
+  `get_decision_log` remains the next open candidate.
+- No new brief logic: the tool's `execute()` lives entirely in `webmcp.ts` (same "compute inline"
+  precedent as `run_scenario`) and reuses `computeModel`/`computeRisks`/`computeRecommendations` plus
+  `generateBoardBrief`/`formatBoardBriefMarkdown` from `boardBrief.ts` verbatim — identical output to
+  what `BoardBrief.tsx` renders on the Reports tab for the same scenario.
+- Input is `{ scenarioId?: string }`; `validateGenerateBoardBriefInput` only checks the type (string
+  or absent). The actual id lookup happens in `execute()` against `actions.getScenarios()` (live
+  state), where an unknown id throws `Unknown scenarioId "…". Call list_scenarios to see valid ids.`
+  — this two-stage validate/lookup split mirrors `rebut_proposal`'s proposalId pattern (format
+  validated first, existence checked against live state second).
+- Read-only w.r.t. the live model (same exploration contract as `run_scenario`/`list_scenarios`),
+  but — like `annotate`/`add_chart`/`highlight` — it IS a meaningful, visible agent action, so it
+  logs one decision-timeline event per successful call. `ModelActions` gained
+  `logBoardBriefGenerated: (scenarioName: string) => void`, threaded through `useWebmcp.ts`'s
+  `modelActions` object (same ref-per-render pattern as the other actions) and wired in `App.tsx` as
+  a **new**, separate wrapper `agentBoardBriefGeneratedWithTimeline` (actor `'Counterpart'`, icon
+  `'report'`) — kept distinct from the existing human-path `boardBriefGeneratedWithTimeline` (actor
+  `HUMAN_ACTOR`) that `BoardBrief.tsx`'s UI still uses, so the timeline can tell a human-opened
+  Reports tab apart from an agent-triggered brief. A failed call (unknown scenarioId) does not log.
+- Manually verified in Chrome (dev server) by mocking `document.modelContext.registerTool` via an
+  `initScript` before page load (no WebMCP-flag browser session this Phase) and calling the
+  registered tool directly: default call returned Current Plan's brief matching the Reports tab;
+  `{ scenarioId: 'cost-control' }` returned Cost Control's brief; `{ scenarioId: 'not-real' }` threw
+  the expected error and logged nothing; `get_model_state`'s assumptions were byte-identical before
+  and after both successful calls; two `'Counterpart'`-actor `'report'` timeline events appeared,
+  most-recent-first; console showed only the expected `[webmcp]` logs, no new errors. Real
+  Chrome-flag / ChatGPT in-app browser verification remains a Phase 24 QA item, same historical gap.
+
 # 18. CURRENT STATUS
 
 Phases 1–23 (partial: one P1 item) are complete.
@@ -539,9 +575,9 @@ this section previously listed a stale pre-rewrite roadmap — corrected here):
 - Phase 20: P0 Saved scenarios and Forecast workspace — DONE
 - Phase 21: P0 Human approval workspace and board brief — DONE
 - Phase 22: P0 reliability, WebMCP integration, and demo readiness — DONE
-- Phase 23: P1 selective extensions — IN PROGRESS (`list_scenarios` tool done; `save_scenario`,
-  `compare_scenarios`, `generate_board_brief`, `get_decision_log`, Present mode, 30-day plan,
-  audit/history view, and extra charts/a11y remain, in that priority order)
+- Phase 23: P1 selective extensions — IN PROGRESS (`list_scenarios` and `generate_board_brief`
+  tools done; `save_scenario`, `compare_scenarios`, `get_decision_log`, Present mode, 30-day plan,
+  audit/history view, and extra charts/a11y remain)
 - Phase 24: Submission and final demo readiness
 
 Do not skip to a later Phase unless Amogh explicitly instructs you to do so.

@@ -8,6 +8,7 @@ import {
   registerModelTools,
   validateAddChartInput,
   validateAnnotateInput,
+  validateGenerateBoardBriefInput,
   validateHighlightInput,
   validateProposeEditInput,
   validateRebutProposalInput,
@@ -344,6 +345,35 @@ describe('formatListScenariosResult', () => {
   });
 });
 
+describe('validateGenerateBoardBriefInput', () => {
+  test('defaults to no scenarioId when omitted', () => {
+    // Arrange + Act
+    const result = validateGenerateBoardBriefInput({});
+
+    // Assert
+    expect(result).toEqual({ scenarioId: undefined });
+  });
+
+  test('passes through a valid scenarioId', () => {
+    // Arrange
+    const input = { scenarioId: 'cost-control' };
+
+    // Act
+    const result = validateGenerateBoardBriefInput(input);
+
+    // Assert
+    expect(result).toEqual({ scenarioId: 'cost-control' });
+  });
+
+  test('throws when scenarioId is not a string', () => {
+    // Arrange
+    const input = { scenarioId: 42 };
+
+    // Act + Assert
+    expect(() => validateGenerateBoardBriefInput(input)).toThrow(/scenarioId must be a string/);
+  });
+});
+
 describe('WebMCP registration audit', () => {
   test('discovers all tools and routes each tool through current page actions without silent model mutation', async () => {
     const registered = new Map<string, { execute: (input?: unknown) => Promise<{ content: Array<{ text: string }> }> }>();
@@ -352,6 +382,7 @@ describe('WebMCP registration audit', () => {
     const annotations: Array<[string, string]> = [];
     const charts: Array<{ seriesIds: string[]; title: string }> = [];
     const highlights: string[][] = [];
+    const boardBriefsLogged: string[] = [];
     const assumptions = { ...DEFAULT_ASSUMPTIONS };
     const output = computeModel(assumptions);
     const scenarios = [makeDerivedScenario({ id: 'current-plan', name: 'Current Plan' })];
@@ -397,6 +428,7 @@ describe('WebMCP registration audit', () => {
           },
           highlight: (targetIds) => highlights.push(targetIds),
           getScenarios: () => ({ scenarios, activeScenarioId: 'current-plan' }),
+          logBoardBriefGenerated: (scenarioName) => boardBriefsLogged.push(scenarioName),
         }),
       ).toBe(true);
 
@@ -410,6 +442,7 @@ describe('WebMCP registration audit', () => {
         'add_chart',
         'highlight',
         'list_scenarios',
+        'generate_board_brief',
       ]);
 
       const scenariosResult = await registered.get('list_scenarios')!.execute({});
@@ -448,6 +481,16 @@ describe('WebMCP registration audit', () => {
       expect(annotations).toEqual([['cac', 'Review paid acquisition efficiency.']]);
       expect(charts).toEqual([{ seriesIds: ['mrr', 'cumulativeCash'], title: 'Growth and cash' }]);
       expect(highlights).toEqual([['monthlyChurnPct', 'monthlyOpex']]);
+
+      const brief = await registered.get('generate_board_brief')!.execute({});
+      expect(brief.content[0].text).toMatch(/# Monthly Financial Update/);
+      expect(brief.content[0].text).toMatch(/## Financial snapshot/);
+      expect(boardBriefsLogged).toEqual(['Current Plan']);
+
+      await expect(
+        registered.get('generate_board_brief')!.execute({ scenarioId: 'not-a-real-scenario' }),
+      ).rejects.toThrow(/Unknown scenarioId/);
+      expect(boardBriefsLogged).toEqual(['Current Plan']);
     } finally {
       if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
       else Reflect.deleteProperty(globalThis, 'document');

@@ -154,6 +154,10 @@ function App() {
     addEvent(HUMAN_ACTOR, 'report', `generated a board brief using the "${scenarioName}" scenario.`);
   };
 
+  const agentBoardBriefGeneratedWithTimeline = (scenarioName: string) => {
+    addEvent('Counterpart', 'report', `generated a board brief using the "${scenarioName}" scenario.`);
+  };
+
   const loadPresetWithTimeline = (preset: Preset) => {
     replaceAssumptions(preset.assumptions);
     scenarios.activate(preset.scenarioId);
@@ -184,6 +188,7 @@ function App() {
       annotate: annotateWithTimeline,
       addChart: addChartWithTimeline,
       highlight: highlightWithTimeline,
+      logBoardBriefGenerated: agentBoardBriefGeneratedWithTimeline,
     },
     () => ({ scenarios: scenarios.scenarios, activeScenarioId: scenarios.activeScenarioId }),
   );

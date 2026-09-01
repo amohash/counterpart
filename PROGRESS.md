@@ -352,3 +352,31 @@ performed this session (no browser automation access) — flagged as a pending P
 same historical pattern as prior WebMCP phases.
 Next: Phase 23 remaining P1 candidates (save_scenario, compare_scenarios, generate_board_brief,
 get_decision_log, then Present mode / 30-day plan / audit view / a11y), one item per session.
+
+## Phase 23 (partial, continued) — DONE (2026-08-31)
+Files created/changed: src/webmcp.ts (+generate_board_brief tool, +validateGenerateBoardBriefInput,
++ModelActions.logBoardBriefGenerated), src/webmcp.test.ts, src/hooks/useWebmcp.ts
+(+logBoardBriefGenerated forwarding), src/App.tsx (+agentBoardBriefGeneratedWithTimeline, wired into
+useWebmcp), AGENTS.md, PROGRESS.md.
+Done Check result: independently re-evaluated the Phase 23 candidate list and chose
+`generate_board_brief` over the previously-recorded next item (`save_scenario`) because it closes
+the largest remaining WebMCP-Leverage gap — producing the board-ready update was still human-only.
+TDD: extended webmcp.test.ts first (registration count 9->10, a new validator describe block, and
+three new assertions in the registration audit for a default-scenario call, an explicit-scenarioId
+call, and an unknown-scenarioId rejection), confirmed red (4 failing), then implemented. 110 tests
+green (4 new), `tsc -b` and `npm run build` clean, `oxlint` shows only the four pre-existing
+documented warnings (no new categories). Manual QA: started the dev server, mocked
+`document.modelContext.registerTool` via a page initScript (no WebMCP-flag browser session this
+Phase) and called the real registered tool directly — default call matched the Reports tab's Current
+Plan brief; an explicit `cost-control` scenarioId produced Cost Control's brief; an unknown
+scenarioId threw the expected error and logged nothing; `get_model_state`'s assumptions were
+unchanged before/after both successful calls; two `'Counterpart'`-actor timeline events appeared,
+most-recent-first; console showed only expected `[webmcp]` logs.
+Decisions worth remembering: see AGENTS.md section 18E — the tool computes everything inline in
+webmcp.ts reusing boardBrief.ts/risks.ts/recommendations.ts verbatim (no new brief logic); a new
+agent-actor timeline wrapper (`'Counterpart'`) is kept separate from the existing human-actor one
+BoardBrief.tsx's UI still uses.
+Gotchas: none new. Real Chrome-flag / ChatGPT in-app browser verification of this tool remains a
+pending Phase 24 QA item, same historical pattern as list_scenarios and prior WebMCP phases.
+Next: Phase 23 remaining P1 candidates (save_scenario, compare_scenarios, get_decision_log, then
+Present mode / 30-day plan / audit view / a11y), one item per session.

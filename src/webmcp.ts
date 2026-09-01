@@ -8,9 +8,12 @@ import {
   type ModelOutput,
   type MonthlySeriesId,
 } from './model';
+import { formatBoardBriefMarkdown, generateBoardBrief } from './boardBrief';
 import type { ExtraChartSpec } from './hooks/useCharts';
 import type { Proposal } from './proposal';
 import { validateAskHumanInput } from './questions';
+import { computeRecommendations } from './recommendations';
+import { computeRisks } from './risks';
 import type { DerivedScenario } from './scenarios';
 
 const LOG_PREFIX = '[webmcp]';
@@ -40,6 +43,8 @@ export interface ModelActions {
   highlight: (targetIds: Array<keyof Assumptions>) => void;
   /** The same scenario library the human sees on the Scenarios tab, read-only. */
   getScenarios: () => { scenarios: DerivedScenario[]; activeScenarioId: string };
+  /** Records the agent-triggered board brief generation on the decision timeline. */
+  logBoardBriefGenerated: (scenarioName: string) => void;
 }
 
 interface ToolResult {
@@ -645,6 +650,70 @@ const LIST_SCENARIOS: ToolDefinition = {
   },
 };
 
+export interface GenerateBoardBriefInput {
+  scenarioId: string | undefined;
+}
+
+/** scenarioId is optional; when supplied it must be a string (the actual
+ * lookup against the scenario library happens in the tool's execute, where
+ * live scenario state is available). */
+export function validateGenerateBoardBriefInput(input: unknown): GenerateBoardBriefInput {
+  const raw = (input ?? {}) as Record<string, unknown>;
+  if (raw.scenarioId === undefined) {
+    return { scenarioId: undefined };
+  }
+
+  if (typeof raw.scenarioId !== 'string') {
+    throw new Error(`scenarioId must be a string, got ${JSON.stringify(raw.scenarioId)}.`);
+  }
+
+  return { scenarioId: raw.scenarioId };
+}
+
+const GENERATE_BOARD_BRIEF: ToolDefinition = {
+  name: 'generate_board_brief',
+  description:
+    'Generates a deterministic, board-ready Markdown update (financial snapshot, key risks, recommended actions, pending/approved decisions, outlook) for a scenario. Read-only — it never changes the live model, matching run_scenario\'s exploration contract. Defaults to the currently active scenario; call list_scenarios first to find a specific scenarioId.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      scenarioId: {
+        type: 'string',
+        description: 'Which scenario to report on. Defaults to the currently active scenario.',
+      },
+    },
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} generate_board_brief called with no page actions available`);
+      throw new Error('The page is not ready to generate a board brief yet.');
+    }
+
+    const { scenarioId } = validateGenerateBoardBriefInput(input);
+    const { scenarios, activeScenarioId } = actions.getScenarios();
+    const targetId = scenarioId ?? activeScenarioId;
+    const scenario = scenarios.find((candidate) => candidate.id === targetId);
+    if (!scenario) {
+      throw new Error(
+        `Unknown scenarioId ${JSON.stringify(targetId)}. Call list_scenarios to see valid ids.`,
+      );
+    }
+
+    const { proposals } = actions.getSnapshot();
+    const output = computeModel(scenario.assumptions);
+    const risks = computeRisks(scenario.assumptions, output);
+    const recommendations = computeRecommendations(risks, scenario.assumptions);
+    const brief = generateBoardBrief(output, risks, recommendations, proposals, scenario.name);
+    const text = formatBoardBriefMarkdown(brief);
+
+    actions.logBoardBriefGenerated(scenario.name);
+    console.log(`${LOG_PREFIX} generate_board_brief -> ${scenario.name} (${text.length} chars)`);
+    return { content: [{ type: 'text', text }] };
+  },
+};
+
 const TOOLS: ToolDefinition[] = [
   GET_MODEL_STATE,
   PROPOSE_EDIT,
@@ -655,6 +724,7 @@ const TOOLS: ToolDefinition[] = [
   ADD_CHART,
   HIGHLIGHT,
   LIST_SCENARIOS,
+  GENERATE_BOARD_BRIEF,
 ];
 
 /**
