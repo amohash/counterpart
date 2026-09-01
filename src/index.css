@@ -1,15 +1,30 @@
 @import "tailwindcss";
 
+/* Institutional monochrome + single-accent system. See DESIGN.md. */
 :root {
-  color: #17211d;
-  background: #f3f1eb;
-  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  --ink: #0b0d0c;
+  --ink-soft: #55605a;
+  --ink-faint: #8b928c;
+  --canvas: #f7f6f2;
+  --surface: #ffffff;
+  --surface-sunken: #f0efe9;
+  --rule: #e4e3dc;
+  --rule-strong: #c7c6bd;
+  --accent: #8a6a26;
+  --accent-deep: #6f5620;
+  --accent-tint: #f4ecd8;
+  --on-accent: #ffffff;
+  --on-ink: #f7f6f2;
+
+  color: var(--ink);
+  background: var(--canvas);
+  font-family: "Inter Variable", "Inter", "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
 
 * {
-  scrollbar-color: #526059 #e8e6df;
+  scrollbar-color: var(--ink-soft) var(--surface-sunken);
   scrollbar-width: thin;
 }
 
@@ -17,7 +32,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background: #f3f1eb;
+  background: var(--canvas);
 }
 
 button,
@@ -34,12 +49,12 @@ input,
 button:focus-visible,
 input:focus-visible,
 [tabindex]:focus-visible {
-  box-shadow: 0 0 0 3px #f3f1eb, 0 0 0 5px #176f55;
+  box-shadow: 0 0 0 3px var(--canvas), 0 0 0 5px var(--accent);
 }
 
 ::selection {
-  color: #f7faf8;
-  background: #176f55;
+  color: var(--on-accent);
+  background: var(--accent);
 }
 
 ::-webkit-scrollbar {
@@ -48,21 +63,57 @@ input:focus-visible,
 }
 
 ::-webkit-scrollbar-track {
-  background: #e8e6df;
+  background: var(--surface-sunken);
 }
 
 ::-webkit-scrollbar-thumb {
-  border: 2px solid #e8e6df;
+  border: 2px solid var(--surface-sunken);
   border-radius: 999px;
-  background: #526059;
+  background: var(--ink-soft);
 }
 
+/* Financial figures use a real tabular-numeral mono face — the one
+   deliberate "instrument" texture in the system, reserved for numbers a
+   person is meant to compare digit-by-digit (metrics, tables, impact rows). */
 .tabular-nums {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
+}
+
+/* The single display voice: used only for the product title and section
+   headings that anchor a surface. Never for body copy or buttons. */
+.font-display {
+  font-family: "Fraunces", Georgia, serif;
+  font-optical-sizing: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+}
+
+/* Reserved for surfaces a person actually acts on (open, select, propose,
+   approve) — never applied to read-only metric or risk tiles. Lift is a
+   depth cue tied to interactivity, not ambient decoration. */
+.card-lift {
+  transition: transform 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.card-lift:hover,
+.card-lift:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--rule-strong);
+  box-shadow: 0 16px 32px rgba(11, 13, 12, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-lift {
+    transition: none;
+  }
+
+  .card-lift:hover,
+  .card-lift:focus-within {
+    transform: none;
   }
 }

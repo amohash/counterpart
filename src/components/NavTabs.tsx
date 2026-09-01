@@ -21,10 +21,10 @@ export function NavTabs({ active, onChange }: NavTabsProps) {
           type="button"
           onClick={() => onChange(tab.id)}
           aria-current={active === tab.id ? 'page' : undefined}
-          className={`min-h-10 whitespace-nowrap rounded-lg px-3.5 text-sm font-semibold transition ${
+          className={`min-h-10 whitespace-nowrap rounded-none px-3.5 text-sm font-semibold transition ${
             active === tab.id
-              ? 'bg-[#17211d] text-[#f8f7f3]'
-              : 'text-[#526059] hover:bg-[#e9ebe6] hover:text-[#25312b]'
+              ? 'bg-[#0b0d0c] text-[#ffffff]'
+              : 'text-[#55605a] hover:bg-[#f0efe9] hover:text-[#0b0d0c]'
           }`}
         >
           {tab.label}

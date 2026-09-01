@@ -90,17 +90,17 @@ export function BoardBrief({ scenarios, activeScenarioId, proposals, onGenerated
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f8f7f3] p-4 shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-none bg-[#ffffff] p-4 shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
         <div className="flex items-center gap-2">
-          <FileText aria-hidden="true" className="text-[#176f55]" size={16} strokeWidth={1.9} />
-          <label htmlFor="board-brief-scenario" className="text-xs font-semibold text-[#25312b]">
+          <FileText aria-hidden="true" className="text-[#8a6a26]" size={16} strokeWidth={1.9} />
+          <label htmlFor="board-brief-scenario" className="text-xs font-semibold text-[#0b0d0c]">
             Reporting on:
           </label>
           <select
             id="board-brief-scenario"
             value={scenario.id}
             onChange={(event) => handleSelectScenario(event.target.value)}
-            className="min-h-9 rounded-lg border border-[#dedfd9] bg-white px-2 text-xs font-medium text-[#25312b]"
+            className="min-h-9 rounded-none border border-[#e4e3dc] bg-white px-2 text-xs font-medium text-[#0b0d0c]"
           >
             {scenarios.map((candidate) => (
               <option key={candidate.id} value={candidate.id}>
@@ -114,7 +114,7 @@ export function BoardBrief({ scenarios, activeScenarioId, proposals, onGenerated
           <button
             type="button"
             onClick={handleRegenerate}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#e6e8e3] px-3 text-xs font-semibold text-[#3e4a44] transition hover:bg-[#daddd6] active:translate-y-px"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-none bg-[#f0efe9] px-3 text-xs font-semibold text-[#3e4a44] transition hover:bg-[#e4e3dc] active:translate-y-px"
           >
             <RefreshCcw aria-hidden="true" size={13} strokeWidth={2.2} />
             Regenerate
@@ -123,10 +123,10 @@ export function BoardBrief({ scenarios, activeScenarioId, proposals, onGenerated
             type="button"
             onClick={handleCopy}
             aria-live="polite"
-            className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition active:translate-y-px ${
+            className={`inline-flex min-h-9 items-center gap-1.5 rounded-none px-3 text-xs font-semibold transition active:translate-y-px ${
               copyState === 'error'
-                ? 'bg-[#faece9] text-[#9c3b32] hover:bg-[#f6ddd7]'
-                : 'bg-[#e6e8e3] text-[#3e4a44] hover:bg-[#daddd6]'
+                ? 'bg-[#f0efe9] text-[#0b0d0c] hover:bg-[#f0efe9]'
+                : 'bg-[#f0efe9] text-[#3e4a44] hover:bg-[#e4e3dc]'
             }`}
           >
             {copyState === 'copied' ? (
@@ -139,7 +139,7 @@ export function BoardBrief({ scenarios, activeScenarioId, proposals, onGenerated
           <button
             type="button"
             onClick={handleDownload}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#176f55] px-3 text-xs font-semibold text-white transition hover:bg-[#115e47] active:translate-y-px"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-none bg-[#8a6a26] px-3 text-xs font-semibold text-white transition hover:bg-[#6f5620] active:translate-y-px"
           >
             <Download aria-hidden="true" size={13} strokeWidth={2.2} />
             Download .md
@@ -147,8 +147,8 @@ export function BoardBrief({ scenarios, activeScenarioId, proposals, onGenerated
         </div>
       </div>
 
-      <article className="rounded-xl bg-[#f8f7f3] p-5 shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
-        <pre className="max-w-none whitespace-pre-wrap font-sans text-xs leading-6 text-[#25312b]">{markdown}</pre>
+      <article className="rounded-none bg-[#ffffff] p-5 shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
+        <pre className="max-w-none whitespace-pre-wrap font-sans text-xs leading-6 text-[#0b0d0c]">{markdown}</pre>
       </article>
     </section>
   );

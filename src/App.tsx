@@ -235,17 +235,17 @@ function App() {
 
   return (
     <MotionConfig reducedMotion="user" transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}>
-      <div className="min-h-screen bg-[#f3f1eb] text-[#17211d]">
-        <header className="border-b border-[#d5d6d0] bg-[#f8f7f3]">
+      <div className="min-h-screen bg-[#f7f6f2] text-[#0b0d0c]">
+        <header className="border-b border-[#e4e3dc] bg-[#ffffff]">
           <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className="grid size-9 place-items-center rounded-lg bg-[#17211d] text-[#f8f7f3] shadow-[0_6px_18px_rgba(23,33,29,0.18)]">
+                <span className="grid size-9 place-items-center rounded-none bg-[#0b0d0c] text-[#ffffff] shadow-[0_6px_18px_rgba(23,33,29,0.18)]">
                   <Network aria-hidden="true" size={18} strokeWidth={1.8} />
                 </span>
                 <div>
-                  <h1 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl">Counterpart</h1>
-                  <p className="text-xs text-[#7a8880]">An AI financial decision partner. You make the call.</p>
+                  <h1 className="font-display text-xl tracking-[-0.01em] sm:text-2xl">Counterpart</h1>
+                  <p className="text-xs text-[#8b928c]">An AI financial decision partner. You make the call.</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -253,10 +253,10 @@ function App() {
                   type="button"
                   onClick={presentMode.isPresentMode ? presentMode.exit : presentMode.enter}
                   aria-pressed={presentMode.isPresentMode}
-                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold transition ${
+                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-none px-2.5 text-xs font-semibold transition ${
                     presentMode.isPresentMode
-                      ? 'bg-[#17211d] text-[#f8f7f3]'
-                      : 'bg-[#e9ebe6] text-[#526059] hover:bg-[#dde0d9] hover:text-[#25312b]'
+                      ? 'bg-[#0b0d0c] text-[#ffffff]'
+                      : 'bg-[#f0efe9] text-[#55605a] hover:bg-[#e4e3dc] hover:text-[#0b0d0c]'
                   }`}
                 >
                   <Presentation aria-hidden="true" size={14} strokeWidth={1.9} />
@@ -333,11 +333,11 @@ function App() {
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mb-5 flex gap-3 rounded-xl border border-dashed border-[#aeb4ae] bg-[#f8f7f3] p-4 text-sm text-[#4f5d56]"
+                  className="mb-5 flex gap-3 rounded-none border border-dashed border-[#c7c6bd] bg-[#ffffff] p-4 text-sm text-[#55605a]"
                 >
-                  <MessageSquareText aria-hidden="true" className="mt-0.5 shrink-0 text-[#176f55]" size={18} />
+                  <MessageSquareText aria-hidden="true" className="mt-0.5 shrink-0 text-[#8a6a26]" size={18} />
                   <div>
-                    <p className="font-semibold text-[#25312b]">Try asking the agent something:</p>
+                    <p className="font-semibold text-[#0b0d0c]">Try asking the agent something:</p>
                     <ul className="mt-1.5 space-y-1 text-xs leading-5">
                       <li>“Raise churn to 15% and tell me what happens to runway”</li>
                       <li>“Compare 3%, 8%, and 15% churn, chart cumulative cash, and flag the risky one”</li>
@@ -353,7 +353,7 @@ function App() {
                 <button
                   type="button"
                   onClick={acceptAll}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#176f55] px-5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(23,111,85,0.18)] transition hover:bg-[#115e47] active:translate-y-px"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-none bg-[#8a6a26] px-5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(23,111,85,0.18)] transition hover:bg-[#6f5620] active:translate-y-px"
                 >
                   <CheckCheck aria-hidden="true" size={17} strokeWidth={2} />
                   Accept all

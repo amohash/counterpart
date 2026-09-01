@@ -1,9 +1,9 @@
 import type { HealthMetric, HealthSeverity } from '../../health';
 
 const SEVERITY_STYLES: Record<HealthSeverity, string> = {
-  good: 'border-[#bcd9cb] bg-[#eef6f1] text-[#176f55]',
-  watch: 'border-[#e7cf9c] bg-[#fbf3e2] text-[#8a5c14]',
-  risk: 'border-[#e2b3ab] bg-[#faece9] text-[#9c3b32]',
+  good: 'border-[#e8ddc0] bg-[#f4ecd8] text-[#8a6a26]',
+  watch: 'border-[#8a6a26] bg-[#f4ecd8] text-[#6f5620]',
+  risk: 'border-[#0b0d0c] bg-[#0b0d0c] text-white',
 };
 
 interface HealthGridProps {
@@ -16,10 +16,10 @@ export function HealthGrid({ metrics }: HealthGridProps) {
       {metrics.map((metric) => (
         <div
           key={metric.id}
-          className="flex flex-col gap-2 rounded-xl bg-[#f8f7f3] p-4 shadow-[0_10px_26px_rgba(23,33,29,0.09)]"
+          className="flex flex-col gap-2 rounded-none bg-[#ffffff] p-4 shadow-[0_10px_26px_rgba(23,33,29,0.09)]"
         >
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#7a8880]">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8b928c]">
               {metric.label}
             </span>
             <span
@@ -28,8 +28,8 @@ export function HealthGrid({ metrics }: HealthGridProps) {
               {metric.statusText}
             </span>
           </div>
-          <p className="tabular-nums text-xl font-semibold tracking-[-0.02em] text-[#17211d]">{metric.value}</p>
-          <p className="text-xs leading-5 text-[#526059]">{metric.interpretation}</p>
+          <p className="tabular-nums text-2xl font-semibold tracking-[-0.01em] text-[#0b0d0c]">{metric.value}</p>
+          <p className="text-xs leading-5 text-[#55605a]">{metric.interpretation}</p>
         </div>
       ))}
     </div>

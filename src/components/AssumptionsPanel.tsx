@@ -56,17 +56,17 @@ export function AssumptionsPanel({
   disabled = false,
 }: AssumptionsPanelProps) {
   return (
-    <section className="rounded-xl bg-[#f8f7f3] shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
-      <div className="flex items-center justify-between border-b border-[#dedfd9] px-4 py-3.5">
+    <section className="rounded-none bg-[#ffffff] shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
+      <div className="flex items-center justify-between border-b border-[#e4e3dc] px-4 py-3.5">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal aria-hidden="true" className="text-[#176f55]" size={17} strokeWidth={1.9} />
+          <SlidersHorizontal aria-hidden="true" className="text-[#8a6a26]" size={17} strokeWidth={1.9} />
           <h2 className="text-sm font-semibold tracking-[-0.01em]">Model assumptions</h2>
         </div>
         <button
           type="button"
           onClick={onReset}
           disabled={disabled}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-[#526059] transition hover:bg-[#e9ebe6] hover:text-[#25312b] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-none px-2.5 text-xs font-semibold text-[#55605a] transition hover:bg-[#f0efe9] hover:text-[#0b0d0c] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           <RotateCcw aria-hidden="true" size={14} strokeWidth={2} />
           Reset model
@@ -75,7 +75,7 @@ export function AssumptionsPanel({
       <div className="flex flex-col gap-5 p-4">
         {FIELD_GROUPS.map(({ title, fields }) => (
           <fieldset key={title} className="flex flex-col gap-3">
-            <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78827c]">
+            <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#8b928c]">
               {title}
             </legend>
             {fields.map(({ key, label }) => {
@@ -85,22 +85,22 @@ export function AssumptionsPanel({
               return (
                 <div
                   key={key}
-                  className={`flex flex-col gap-1.5 rounded-lg transition-[box-shadow,background-color] duration-300 ${
-                    isHighlighted ? 'bg-[#e7f2ed] shadow-[0_0_0_2px_#238061]' : ''
+                  className={`flex flex-col gap-1.5 rounded-none transition-[box-shadow,background-color] duration-300 ${
+                    isHighlighted ? 'bg-[#f4ecd8] shadow-[0_0_0_2px_#8a6a26]' : ''
                   }`}
                 >
-                  <label className="flex items-center gap-3 text-xs font-medium text-[#526059]">
+                  <label className="flex items-center gap-3 text-xs font-medium text-[#55605a]">
                     <span className="min-w-0 flex-1">{label}</span>
                     <input
                       type="number"
                       disabled={disabled}
-                      className="tabular-nums h-11 w-28 rounded-lg border border-[#cfd3cc] bg-white px-2.5 text-right text-sm font-semibold text-[#17211d] transition hover:border-[#9ca69f] focus:border-[#176f55] disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-32"
+                      className="tabular-nums h-11 w-28 rounded-none border border-[#e4e3dc] bg-white px-2.5 text-right text-sm font-semibold text-[#0b0d0c] transition hover:border-[#8b928c] focus:border-[#8a6a26] disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-32"
                       value={assumptions[key]}
                       onChange={(event) => onChange(key, Number(event.target.value))}
                     />
                   </label>
                   {note && (
-                    <p className="rounded-lg bg-[#e8eef0] px-2.5 py-2 text-xs leading-4 text-[#294b55]">
+                    <p className="rounded-none bg-[#f0efe9] px-2.5 py-2 text-xs leading-4 text-[#55605a]">
                       {note}
                     </p>
                   )}

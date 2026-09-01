@@ -57,55 +57,61 @@ export function PendingDecisions({
   };
 
   return (
-    <section className="rounded-xl bg-[#f8f7f3] p-4 shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
+    <section className="rounded-none bg-[#ffffff] p-4 shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
       <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-[-0.01em]">
-        <Gauge aria-hidden="true" className="text-[#8a5c14]" size={16} strokeWidth={1.9} />
+        <Gauge aria-hidden="true" className="text-[#6f5620]" size={16} strokeWidth={1.9} />
         Pending decisions
       </h2>
       {pending.length === 0 ? (
-        <p className="text-xs leading-5 text-[#526059]">
+        <p className="text-xs leading-5 text-[#55605a]">
           No proposals are awaiting your decision right now.
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
+          <AnimatePresence initial={false}>
           {pending.map((proposal) => {
             const currentValue = assumptions[proposal.targetId];
             const impact = computeProposalImpact(assumptions, output, proposal);
             const isExpanded = expandedIds.has(proposal.id);
 
             return (
-              <li
+              <motion.li
                 key={proposal.id}
-                className="overflow-hidden rounded-xl border border-[#dfbe78] bg-[#fffaf0] text-xs shadow-[0_7px_18px_rgba(107,75,19,0.10)]"
+                layout
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="card-lift overflow-hidden rounded-none border border-[#8a6a26] bg-[#f4ecd8] text-xs shadow-[0_7px_18px_rgba(107,75,19,0.10)]"
               >
-                <div className="flex items-center justify-between gap-2 border-b border-[#ead7ad] px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2 border-b border-[#e8ddc0] px-3 py-2.5">
                   <AgentBadge name={proposal.agentId} color={proposal.agentColor} />
-                  <p className="tabular-nums text-sm font-bold text-[#5f4517]">
-                    {proposal.targetId}: {currentValue} <span className="px-1 text-[#a17a32]">→</span> {proposal.newValue}
+                  <p className="tabular-nums text-sm font-bold text-[#0b0d0c]">
+                    {proposal.targetId}: {currentValue} <span className="px-1 text-[#8a6a26]">→</span> {proposal.newValue}
                   </p>
                 </div>
-                <p className="px-3 py-2.5 leading-5 text-[#6b5327]">{proposal.rationale}</p>
+                <p className="px-3 py-2.5 leading-5 text-[#55605a]">{proposal.rationale}</p>
 
                 {proposal.rebuttals?.length > 0 && (
-                  <div className="space-y-2 border-t border-[#ead7ad] bg-[#f5f2ea] px-3 py-2.5">
+                  <div className="space-y-2 border-t border-[#e8ddc0] bg-[#f0efe9] px-3 py-2.5">
                     {proposal.rebuttals.map((rebuttal, index) => (
                       <div key={`${rebuttal.agentId}-${index}`} className="grid grid-cols-[16px_1fr] gap-2">
-                        <CornerDownRight aria-hidden="true" className="mt-1 text-[#8f968f]" size={14} />
+                        <CornerDownRight aria-hidden="true" className="mt-1 text-[#8b928c]" size={14} />
                         <div>
                           <AgentBadge name={rebuttal.agentId} color={rebuttal.agentColor} />
-                          <p className="mt-1.5 leading-5 text-[#4c5751]">{rebuttal.rationale}</p>
+                          <p className="mt-1.5 leading-5 text-[#55605a]">{rebuttal.rationale}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                <div className="border-t border-[#ead7ad] px-3 py-2.5">
+                <div className="border-t border-[#e8ddc0] px-3 py-2.5">
                   <button
                     type="button"
                     onClick={() => toggleImpact(proposal)}
                     aria-expanded={isExpanded}
-                    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#8a5c14]"
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#6f5620]"
                   >
                     <ChevronDown
                       aria-hidden="true"
@@ -123,9 +129,9 @@ export function PendingDecisions({
                         className="mt-2 grid grid-cols-2 gap-2 overflow-hidden sm:grid-cols-4"
                       >
                         {IMPACT_ROWS.map((row) => (
-                          <div key={row.key} className="rounded-lg bg-white/70 p-2">
-                            <dt className="text-[10px] uppercase tracking-[0.06em] text-[#8a7449]">{row.label}</dt>
-                            <dd className="tabular-nums font-semibold text-[#5f4517]">
+                          <div key={row.key} className="rounded-none bg-white/70 p-2">
+                            <dt className="text-[10px] uppercase tracking-[0.06em] text-[#8b928c]">{row.label}</dt>
+                            <dd className="tabular-nums font-semibold text-[#0b0d0c]">
                               {row.format(impact[row.key].before)} → {row.format(impact[row.key].after)}
                             </dd>
                           </div>
@@ -135,11 +141,11 @@ export function PendingDecisions({
                   </AnimatePresence>
                 </div>
 
-                <div className="flex gap-2 border-t border-[#ead7ad] px-3 py-2.5">
+                <div className="flex gap-2 border-t border-[#e8ddc0] px-3 py-2.5">
                   <button
                     type="button"
                     onClick={() => onAccept(proposal.id)}
-                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#176f55] px-3 font-semibold text-white transition hover:bg-[#115e47] active:translate-y-px"
+                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-none bg-[#8a6a26] px-3 font-semibold text-white transition hover:bg-[#6f5620] active:translate-y-px"
                   >
                     <Check aria-hidden="true" size={14} strokeWidth={2.2} />
                     Approve
@@ -147,15 +153,16 @@ export function PendingDecisions({
                   <button
                     type="button"
                     onClick={() => onReject(proposal.id)}
-                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#e6e8e3] px-3 font-semibold text-[#3e4a44] transition hover:bg-[#daddd6] active:translate-y-px"
+                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-none bg-[#f0efe9] px-3 font-semibold text-[#3e4a44] transition hover:bg-[#e4e3dc] active:translate-y-px"
                   >
                     <X aria-hidden="true" size={14} strokeWidth={2.2} />
                     Reject
                   </button>
                 </div>
-              </li>
+              </motion.li>
             );
           })}
+          </AnimatePresence>
         </ul>
       )}
     </section>

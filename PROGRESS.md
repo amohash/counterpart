@@ -632,3 +632,45 @@ Remaining work is external to code: Amogh must manually rehearse the judge
 demo path in Chrome (WebMCP testing flag) and ChatGPT's in-app browser, then
 complete hackathon submission (live URL, public repo, license, description,
 demo video) per CLAUDE.md §17.
+
+## Visual redesign — monochrome + single-accent — DONE (2026-08-31)
+Out-of-roadmap, explicitly requested and gated by Amogh across two rounds in
+one session via `/orch-add-feature` + the `impeccable` skill (not a numbered
+CLAUDE.md Phase — the project was already feature-complete after Phase 24).
+Round 1 was a "light polish" pass (sharp corners, restrained hover/entrance
+motion) on the old warm-paper palette; Amogh rejected it as too incremental
+and asked for a full institutional redesign inspired by
+Bloomberg/Stripe/Ramp/Mercury/Linear/Wealthfront, monochrome with exactly one
+accent color. This entry covers the final, shipped state — the round-1 work
+is folded in, not separately preserved.
+Presentation-layer only: no model, WebMCP, or logic files changed. New
+dependencies: `@fontsource/fraunces`, `@fontsource-variable/inter`,
+`@fontsource/ibm-plex-mono` (self-hosted fonts, no other library changes).
+Files created/changed: `src/main.tsx` (font imports), `src/index.css` (new
+palette custom properties, `.card-lift`, `.font-display`, mono
+`.tabular-nums`), `DESIGN.md` (fully rewritten, not incrementally edited),
+`src/components/AgentBadge.tsx` (dropped per-agent color, ink-only),
+`src/components/decision-room/{HealthGrid,RiskList,RecommendationList,
+PendingDecisions,DecisionTimeline}.tsx`, `src/components/scenarios/
+ScenarioWorkspace.tsx`, `src/App.tsx` (masthead `font-display`), plus a
+scripted hex-remap across every remaining component file recoloring the old
+warm-paper/emerald/amber/red palette to the new ink/paper/accent system.
+Done Check result: `npm install` added exactly the three font packages;
+`npm run build` clean; `npx vitest run` 133/133 green (no test file changes
+needed); `npx oxlint src` shows only the same six pre-existing documented
+warnings. Manually verified in Chrome via `chrome-devtools` MCP on Decision
+Room and Scenarios: Fraunces at the masthead, IBM Plex Mono on every figure,
+solid-ink "CRITICAL" badges, single bronze-gold accent throughout, no new
+console errors, all eleven WebMCP tools still register.
+Decisions worth remembering: see AGENTS.md §20 for the full rationale,
+including the One-Accent Rule, the ink-inversion severity system replacing
+red/amber/green, and the note that `proposal.ts`'s `AGENT_COLOR_PALETTE` is
+now vestigial (kept for API stability, no longer rendered distinctly).
+Gotchas: the scripted hex remap is high-leverage but not proof against a
+missed edge case — a future agent touching colors should sanity-check
+against DESIGN.md's stated roles rather than assuming every instance was
+intentional. GateGuard's per-file Fact-Forcing Gate fires on first
+Edit/Write of each new file per session (see AGENTS.md §20).
+Next: none required — this was a scoped, closed-ended redesign. Future
+visual work needs the same explicit go-ahead from Amogh, not an assumed
+continuation.

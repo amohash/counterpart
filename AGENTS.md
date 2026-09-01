@@ -980,7 +980,95 @@ Findings:
 
 ---
 
-# 20. FINAL PRINCIPLE
+# 20. VISUAL REDESIGN — MONOCHROME + SINGLE-ACCENT "INSTITUTIONAL INSTRUMENT"
+
+Out-of-roadmap presentation-layer work, run after Phase 24 (the project was
+already feature-complete). Scoped and gated explicitly by Amogh across two
+rounds in one session via `/orch-add-feature` + the `impeccable` skill, not
+by CLAUDE.md's numbered Phase list — CLAUDE.md §25 says to stop building
+features once Phase 24 passes, so any future visual work needs the same
+explicit go-ahead. **This entry supersedes an earlier same-session pass**
+that only sharpened corners and added restrained hover/entrance motion on
+top of the old warm-paper "Analyst's Workbench" palette — Amogh rejected
+that as too incremental ("this page still has the exact same styling...
+boring hover and shadow effect") and asked for a full replacement inspired
+by Bloomberg/Stripe/Ramp/Mercury/Linear/Wealthfront/private-banking software.
+
+**This is a redesign (replace), not a refinement.** DESIGN.md's old
+"Analyst's Workbench" section (warm paper, emerald/amber/red semantics,
+Avenir Next) is fully replaced, not kept as a fallback or hybrid — see
+DESIGN.md's own Do/Don't for the explicit "don't bring it back as a softer
+variant" instruction to future agents.
+
+**What changed (presentation layer only, zero model/logic/WebMCP changes):**
+- **New fonts, self-hosted via npm** (not a CDN, not a system-face fallback):
+  `@fontsource/fraunces` (display, masthead only), `@fontsource-variable/inter`
+  (body/UI, replaces Avenir Next), `@fontsource/ibm-plex-mono` (every
+  financial figure — replaces `font-variant-numeric` alone on `.tabular-nums`
+  with a real monospace face). Imported once in `src/main.tsx` above
+  `./index.css`. These are the only new dependencies added; no other library
+  changes.
+- **Monochrome ink/paper scale + exactly one accent.** New CSS custom
+  properties in `src/index.css` (`--ink`, `--ink-soft`, `--ink-faint`,
+  `--canvas`, `--surface`, `--surface-sunken`, `--rule`, `--rule-strong`,
+  `--accent` `#8a6a26` muted bronze-gold, `--accent-deep`, `--accent-tint`).
+  A scripted hex remap (`python3` regex pass, not hand-editing each file)
+  converted every component's old hardcoded hex literal to the new palette
+  based on its documented old semantic role (old "Operator Emerald" → new
+  accent; old "paper surface" cream → new pure-white `surface`; old
+  red/danger family → `ink`, since severity is now inversion-based, not a
+  second hue). **Verify the mapping in `git diff` before trusting a specific
+  file's colors** — a blind regex pass is high-leverage but not proof against
+  a missed edge case; nothing broke build/tests, but a future agent doing
+  further color work should sanity-check against DESIGN.md's stated roles
+  rather than assuming every instance was intentional.
+- **Severity is no longer color-per-state.** `RiskList`, `HealthGrid`, and
+  `ScenarioWorkspace`'s `SEVERITY_STYLES`/`STATUS_STYLES` objects now express
+  critical/risk as solid ink-inverted (black bg, white text — a "stamped
+  alert"), watch/at-risk/proposal as the accent tint, and healthy/good as a
+  plain surface — three visual weights, one accent, no red/amber/green
+  trio. Severity/status text labels are unchanged (CRITICAL/HEALTHY/etc.),
+  so CLAUDE.md's "text status in addition to color" requirement still holds.
+- **Agent identity dropped its per-agent color.** `AgentBadge` still accepts
+  a `color` prop (unused now, kept so `proposal.ts`'s `AGENT_COLOR_PALETTE`
+  and existing callers/tests didn't need type changes) but renders a fixed
+  ink border/text — identity is carried by icon + name text only, which was
+  already the documented accessibility rule ("never communicate identity by
+  color alone"). `AGENT_COLOR_PALETTE` in `proposal.ts` is now vestigial data
+  (still assigned/stored, just not rendered distinctly) — a future agent
+  could remove it if a Phase ever revisits `proposal.ts`, but it was left
+  alone this pass to avoid touching the data layer for a presentation change.
+- **Sharp corners, `.card-lift`, and entrance motion** from the prior pass
+  carry forward unchanged in behavior (see the rationale that used to live
+  in this section): read-only tiles never lift or animate; only
+  human-actionable cards (proposals, scenario cards, recommendations with a
+  propose action) get `.card-lift`; only genuinely new agent activity
+  (`PendingDecisions` proposals, `DecisionTimeline` events) gets entrance
+  motion via `AnimatePresence initial={false}`.
+- **DESIGN.md fully rewritten**, not incrementally edited — frontmatter
+  `colors`/`typography` blocks, Overview, Colors, Typography, Elevation,
+  Shapes, Components, and Do/Don't sections all describe the new system as
+  authoritative. It explicitly documents the One-Accent Rule and warns
+  against reintroducing a second hue for severity/identity/decoration.
+
+**Verification:** `npm install` added exactly the three font packages (no
+other dependency changes); `npm run build` (`tsc -b && vite build`) clean;
+`npx vitest run` 133/133 green (no test file needed changes — no logic
+touched); `npx oxlint src` shows only the same six pre-existing documented
+warnings, no new categories. Manually verified in Chrome via
+`chrome-devtools` MCP on both Decision Room and Scenarios: Fraunces renders
+at the masthead, IBM Plex Mono renders on every figure, critical/risk badges
+show solid-ink inversion, no console errors beyond the pre-existing
+form-field a11y nit; all eleven WebMCP tools still register correctly.
+
+**Gotcha:** the GateGuard hook fires a "Fact-Forcing Gate" before the first
+Edit/Write of *each new file* in a session (not just the first Bash call) —
+state importers/callers/API-impact/instruction-quote inline in the same
+turn as the edit, or it blocks with a denial count that persists per file.
+
+---
+
+# 21. FINAL PRINCIPLE
 
 Counterpart wins by making WebMCP necessary to the experience.
 
