@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   formatAskHumanResult,
+  formatDecisionLogResult,
   formatListScenariosResult,
   formatProposeEditResult,
   formatRunScenarioResult,
@@ -17,6 +18,7 @@ import {
 import { computeModel, DEFAULT_ASSUMPTIONS } from './model';
 import type { Proposal } from './proposal';
 import type { DerivedScenario } from './scenarios';
+import type { TimelineEvent } from './timeline';
 
 function makeDerivedScenario(overrides: Partial<DerivedScenario> = {}): DerivedScenario {
   const assumptions = { ...DEFAULT_ASSUMPTIONS };
@@ -345,6 +347,60 @@ describe('formatListScenariosResult', () => {
   });
 });
 
+describe('formatDecisionLogResult', () => {
+  function makeEvent(overrides: Partial<TimelineEvent> = {}): TimelineEvent {
+    return {
+      id: 'event-1',
+      timestamp: '2026-01-01T00:00:00.000Z',
+      actor: 'Amogh',
+      icon: 'approve',
+      sentence: 'Approved raising monthly opex to $144,000.',
+      ...overrides,
+    };
+  }
+
+  test('returns events most-recent-first with optional detail included', () => {
+    // Arrange
+    const events = [
+      makeEvent({ id: 'event-1', timestamp: '2026-01-01T00:00:00.000Z' }),
+      makeEvent({
+        id: 'event-2',
+        timestamp: '2026-01-02T00:00:00.000Z',
+        actor: 'Risk',
+        icon: 'proposal',
+        sentence: 'Proposed raising monthly opex.',
+        detail: 'Extend runway while retention work is underway.',
+      }),
+    ];
+
+    // Act
+    const result = JSON.parse(formatDecisionLogResult(events));
+
+    // Assert
+    expect(result.events).toHaveLength(2);
+    expect(result.events[0]).toMatchObject({ id: 'event-2', actor: 'Risk', icon: 'proposal' });
+    expect(result.events[0].detail).toBe('Extend runway while retention work is underway.');
+    expect(result.events[1]).toMatchObject({ id: 'event-1' });
+  });
+
+  test('caps the result at the 25 most recent events', () => {
+    // Arrange
+    const events = Array.from({ length: 30 }, (_, index) =>
+      makeEvent({
+        id: `event-${index + 1}`,
+        timestamp: new Date(2026, 0, index + 1).toISOString(),
+      }),
+    );
+
+    // Act
+    const result = JSON.parse(formatDecisionLogResult(events));
+
+    // Assert
+    expect(result.events).toHaveLength(25);
+    expect(result.events[0].id).toBe('event-30');
+  });
+});
+
 describe('validateGenerateBoardBriefInput', () => {
   test('defaults to no scenarioId when omitted', () => {
     // Arrange + Act
@@ -386,6 +442,15 @@ describe('WebMCP registration audit', () => {
     const assumptions = { ...DEFAULT_ASSUMPTIONS };
     const output = computeModel(assumptions);
     const scenarios = [makeDerivedScenario({ id: 'current-plan', name: 'Current Plan' })];
+    const timeline: TimelineEvent[] = [
+      {
+        id: 'event-1',
+        timestamp: '2026-01-01T00:00:00.000Z',
+        actor: 'Amogh',
+        icon: 'approve',
+        sentence: 'Approved raising monthly opex.',
+      },
+    ];
 
     Object.defineProperty(globalThis, 'document', {
       configurable: true,
@@ -429,6 +494,7 @@ describe('WebMCP registration audit', () => {
           highlight: (targetIds) => highlights.push(targetIds),
           getScenarios: () => ({ scenarios, activeScenarioId: 'current-plan' }),
           logBoardBriefGenerated: (scenarioName) => boardBriefsLogged.push(scenarioName),
+          getTimeline: () => timeline,
         }),
       ).toBe(true);
 
@@ -443,6 +509,7 @@ describe('WebMCP registration audit', () => {
         'highlight',
         'list_scenarios',
         'generate_board_brief',
+        'get_decision_log',
       ]);
 
       const scenariosResult = await registered.get('list_scenarios')!.execute({});
@@ -491,6 +558,11 @@ describe('WebMCP registration audit', () => {
         registered.get('generate_board_brief')!.execute({ scenarioId: 'not-a-real-scenario' }),
       ).rejects.toThrow(/Unknown scenarioId/);
       expect(boardBriefsLogged).toEqual(['Current Plan']);
+
+      const log = await registered.get('get_decision_log')!.execute({});
+      expect(JSON.parse(log.content[0].text).events).toEqual([
+        expect.objectContaining({ id: 'event-1', actor: 'Amogh', icon: 'approve' }),
+      ]);
     } finally {
       if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
       else Reflect.deleteProperty(globalThis, 'document');

@@ -191,6 +191,7 @@ function App() {
       logBoardBriefGenerated: agentBoardBriefGeneratedWithTimeline,
     },
     () => ({ scenarios: scenarios.scenarios, activeScenarioId: scenarios.activeScenarioId }),
+    () => events,
   );
 
   const handleRecommendationPropose = (recommendation: Recommendation) => {

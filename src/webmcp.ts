@@ -15,6 +15,7 @@ import { validateAskHumanInput } from './questions';
 import { computeRecommendations } from './recommendations';
 import { computeRisks } from './risks';
 import type { DerivedScenario } from './scenarios';
+import type { TimelineEvent } from './timeline';
 
 const LOG_PREFIX = '[webmcp]';
 
@@ -45,6 +46,8 @@ export interface ModelActions {
   getScenarios: () => { scenarios: DerivedScenario[]; activeScenarioId: string };
   /** Records the agent-triggered board brief generation on the decision timeline. */
   logBoardBriefGenerated: (scenarioName: string) => void;
+  /** The full human-agent decision timeline, most-recent-first, read-only. */
+  getTimeline: () => TimelineEvent[];
 }
 
 interface ToolResult {
@@ -631,6 +634,46 @@ export function formatListScenariosResult(scenarios: DerivedScenario[], activeSc
   return JSON.stringify(payload);
 }
 
+const MAX_DECISION_LOG_EVENTS = 25;
+
+/** Sorts a copy of `events` newest-first and caps it, so an agent gets a
+ * bounded, chronological view of what has already been decided regardless of
+ * the order the caller's array happens to be in. */
+export function formatDecisionLogResult(events: TimelineEvent[]): string {
+  const sorted = [...events].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
+  const payload = {
+    events: sorted.slice(0, MAX_DECISION_LOG_EVENTS).map((event) => ({
+      id: event.id,
+      timestamp: event.timestamp,
+      actor: event.actor,
+      icon: event.icon,
+      sentence: event.sentence,
+      ...(event.detail !== undefined ? { detail: event.detail } : {}),
+    })),
+  };
+  return JSON.stringify(payload);
+}
+
+const GET_DECISION_LOG: ToolDefinition = {
+  name: 'get_decision_log',
+  description:
+    'Returns the human-agent decision timeline (proposals, rebuttals, approvals, rejections, scenario activity, board briefs), most-recent-first and capped at the last 25 events. Read-only. Call this before proposing a change to check whether something similar was already decided.',
+  inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  execute: async () => {
+    const actions = currentActions;
+    if (!actions) {
+      console.error(`${LOG_PREFIX} get_decision_log called with no page actions available`);
+      return { content: [{ type: 'text', text: '{"error":"decision log unavailable"}' }] };
+    }
+
+    const text = formatDecisionLogResult(actions.getTimeline());
+    console.log(`${LOG_PREFIX} get_decision_log -> ${text.length} chars`);
+    return { content: [{ type: 'text', text }] };
+  },
+};
+
 const LIST_SCENARIOS: ToolDefinition = {
   name: 'list_scenarios',
   description:
@@ -725,6 +768,7 @@ const TOOLS: ToolDefinition[] = [
   HIGHLIGHT,
   LIST_SCENARIOS,
   GENERATE_BOARD_BRIEF,
+  GET_DECISION_LOG,
 ];
 
 /**

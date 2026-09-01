@@ -9,12 +9,13 @@ import { registerModelTools, type ModelActions, type ModelSnapshot } from '../we
  */
 const DETECT_RETRY_MS = 1000;
 
-export type WebmcpActions = Omit<ModelActions, 'getSnapshot' | 'getScenarios'>;
+export type WebmcpActions = Omit<ModelActions, 'getSnapshot' | 'getScenarios' | 'getTimeline'>;
 
 export function useWebmcp(
   snapshot: ModelSnapshot,
   actions: WebmcpActions,
   getScenarios: ModelActions['getScenarios'],
+  getTimeline: ModelActions['getTimeline'],
 ): boolean {
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
@@ -24,6 +25,9 @@ export function useWebmcp(
 
   const getScenariosRef = useRef(getScenarios);
   getScenariosRef.current = getScenarios;
+
+  const getTimelineRef = useRef(getTimeline);
+  getTimelineRef.current = getTimeline;
 
   const [isDetected, setIsDetected] = useState(false);
 
@@ -40,6 +44,7 @@ export function useWebmcp(
       highlight: (targetIds) => actionsRef.current.highlight(targetIds),
       getScenarios: () => getScenariosRef.current(),
       logBoardBriefGenerated: (scenarioName) => actionsRef.current.logBoardBriefGenerated(scenarioName),
+      getTimeline: () => getTimelineRef.current(),
     };
 
     if (registerModelTools(modelActions)) {

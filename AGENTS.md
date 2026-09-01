@@ -446,6 +446,50 @@ Then add the chronological detail to `PROGRESS.md`.
   complete" rule and Amogh's explicit "one P1 item per session" instruction. These remain open
   Phase 23 candidates for a future session, in that priority order.
 
+## 18F. PHASE 23 (CONTINUED) DURABLE DECISIONS — `get_decision_log`
+
+- Added `get_decision_log` as the third P1 item, chosen over `save_scenario`/`compare_scenarios`
+  because `list_scenarios` already returns every scenario's runway/ARR/LTV-CAC/burn side by side
+  (making a separate `compare_scenarios` tool redundant), and scenario creation is a deliberate
+  human-only action mirroring preset-switching (lower agent leverage than closing this gap).
+  `get_model_state` only ever exposed *pending* proposals — nothing let an agent see decided
+  history (approvals/rejections/rebuttals/scenario activations/board briefs), which is the whole
+  point of CLAUDE.md section 12's timeline. This was judged the largest remaining WebMCP-Leverage
+  gap: without it an agent could re-propose something already rejected, or write recommendations
+  blind to what was already decided.
+- `ModelActions` gained `getTimeline: () => TimelineEvent[]`, threaded through `useWebmcp.ts` as a
+  fourth positional argument (`getTimelineRef`, same ref-per-render pattern as `getScenariosRef`)
+  and wired in `App.tsx`'s single `useWebmcp(...)` call as `() => events` from the existing
+  `useTimeline()` hook result — no new state was introduced.
+- New pure, exported formatter `formatDecisionLogResult(events)` in `webmcp.ts` sorts a *copy* of
+  the events newest-first by `timestamp` (does not trust caller ordering) and caps the result at
+  `MAX_DECISION_LOG_EVENTS = 25` so the payload stays bounded regardless of how long a session runs.
+  `detail` is included only when present (spread-conditional, not `detail: undefined`).
+- Read-only, no-input tool (same `{}` schema as `list_scenarios`) and — like `get_model_state` and
+  `list_scenarios` — deliberately logs no timeline event of its own (reading history isn't itself a
+  decision).
+- TDD: extended `webmcp.test.ts` first — a new `formatDecisionLogResult` describe block (sort +
+  25-event cap) and the registration-audit's tool-name list (10→11) plus a `getTimeline` action and
+  a final `get_decision_log` execute() assertion — confirmed 3 failing, then implemented. 112 tests
+  green (3 new), `tsc -b` and `npm run build` clean, `oxlint` shows one more `useWebmcp.ts` ref
+  warning (`getTimelineRef`, same existing category, no new category) plus the one pre-existing
+  `App.tsx` set-state-in-effect warning.
+- Manual live-browser QA was attempted this session via the chrome-devtools MCP against the dev
+  server (mocking `document.modelContext.registerTool` through `navigate_page`'s `initScript`, the
+  same technique that worked for `generate_board_brief`) but could not be completed: this session's
+  `evaluate_script` calls execute in a context that does not share `window`/`document` expando
+  state — nor, it turned out, cross-context `CustomEvent` dispatch — with the page's main-world
+  React app, so a captured tool reference from `initScript` was unreachable from `evaluate_script`
+  (confirmed registration succeeded via the `[webmcp] registered ...` console log naming all 11
+  tools including `get_decision_log`, but `window.__tools`/`document.__tools` read back empty, and
+  a `CustomEvent` round-trip bridge hung and was aborted). This is a session/harness limitation, not
+  a code defect. The webmcp.test.ts registration-audit test (which invokes the real captured
+  `execute()` functions against live-style actions in Node, not a browser) is this Phase's
+  verification instead. Real Chrome-flag / ChatGPT in-app browser verification of `get_decision_log`
+  remains a pending Phase 24 QA item, same historical pattern as prior WebMCP-tool phases.
+- Remaining open Phase 23 candidates, in priority order: `save_scenario`, `compare_scenarios` (both
+  now lower-value given the above), then Present mode / 30-day plan / richer audit view / a11y.
+
 ## 18E. PHASE 23 (CONTINUED) DURABLE DECISIONS — `generate_board_brief`
 
 - Added `generate_board_brief` as the second P1 item, chosen ahead of `save_scenario`/
@@ -575,8 +619,8 @@ this section previously listed a stale pre-rewrite roadmap — corrected here):
 - Phase 20: P0 Saved scenarios and Forecast workspace — DONE
 - Phase 21: P0 Human approval workspace and board brief — DONE
 - Phase 22: P0 reliability, WebMCP integration, and demo readiness — DONE
-- Phase 23: P1 selective extensions — IN PROGRESS (`list_scenarios` and `generate_board_brief`
-  tools done; `save_scenario`, `compare_scenarios`, `get_decision_log`, Present mode, 30-day plan,
+- Phase 23: P1 selective extensions — IN PROGRESS (`list_scenarios`, `generate_board_brief`, and
+  `get_decision_log` tools done; `save_scenario`, `compare_scenarios`, Present mode, 30-day plan,
   audit/history view, and extra charts/a11y remain)
 - Phase 24: Submission and final demo readiness
 

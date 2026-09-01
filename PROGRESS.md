@@ -380,3 +380,32 @@ Gotchas: none new. Real Chrome-flag / ChatGPT in-app browser verification of thi
 pending Phase 24 QA item, same historical pattern as list_scenarios and prior WebMCP phases.
 Next: Phase 23 remaining P1 candidates (save_scenario, compare_scenarios, get_decision_log, then
 Present mode / 30-day plan / audit view / a11y), one item per session.
+
+## Phase 23 (partial, continued 2) — DONE (2026-08-31)
+Files created/changed: src/webmcp.ts (+get_decision_log tool, +formatDecisionLogResult,
++ModelActions.getTimeline), src/webmcp.test.ts, src/hooks/useWebmcp.ts (+getTimeline param),
+src/App.tsx (wired useTimeline's events into useWebmcp), AGENTS.md, PROGRESS.md.
+Done Check result: chose `get_decision_log` over `save_scenario`/`compare_scenarios` because
+`list_scenarios` already returns every scenario's metrics side by side (making compare_scenarios
+redundant) and scenario creation is deliberately human-only; `get_model_state` never exposed decided
+history, only pending proposals, which is the largest remaining WebMCP-Leverage gap in CLAUDE.md
+section 12's timeline. TDD: extended webmcp.test.ts first (a new formatDecisionLogResult describe
+block covering newest-first sorting and a 25-event cap, plus the registration audit's tool count
+10->11, a getTimeline action, and a get_decision_log execute() assertion), confirmed 3 failing, then
+implemented. 112 tests green (3 new), `tsc -b` and `npm run build` clean, `oxlint` shows one more
+useWebmcp.ts ref warning (getTimelineRef, same existing category) plus the one pre-existing App.tsx
+warning, no new categories.
+Decisions worth remembering: see AGENTS.md section 18F — the sort-then-cap formatter design, the
+getTimeline wiring pattern, and the read-only/no-timeline-event-of-its-own precedent.
+Gotchas: attempted live-browser QA via chrome-devtools MCP (initScript-mocked
+document.modelContext.registerTool, same technique that worked for generate_board_brief) but this
+session's evaluate_script executes in a context that does not share window/document expando state
+(nor, tested, cross-context CustomEvent dispatch) with the page's main-world React app — registration
+was confirmed via the `[webmcp] registered ...` console log listing all 11 tools, but the captured
+tool reference was unreachable from evaluate_script, and a CustomEvent bridge hung and was aborted.
+This is a session/harness limitation, not a code defect; webmcp.test.ts's registration-audit test
+(real execute() calls against live-style actions in Node) is this Phase's verification instead. Real
+Chrome-flag / ChatGPT in-app browser verification remains a pending Phase 24 QA item.
+Next: Phase 23 remaining P1 candidates (save_scenario, compare_scenarios — both now lower priority
+given list_scenarios' overlap and scenario-creation's human-only design — then Present mode / 30-day
+plan / audit view / a11y), one item per session.
