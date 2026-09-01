@@ -3,6 +3,7 @@ import {
   createTimelineEvent,
   filterTimelineEvents,
   observeTimelineEventIds,
+  searchTimelineEvents,
   type TimelineEvent,
 } from './timeline';
 
@@ -41,6 +42,31 @@ describe('filterTimelineEvents', () => {
 
   test('returns an empty array when no events match the actor', () => {
     expect(filterTimelineEvents(events, 'Counterpart')).toEqual([]);
+  });
+});
+
+describe('searchTimelineEvents', () => {
+  const events: TimelineEvent[] = [
+    { id: 'event-1', timestamp: new Date().toISOString(), actor: 'Amogh', icon: 'approve', sentence: 'Approved a proposal.' },
+    { id: 'event-2', timestamp: new Date().toISOString(), actor: 'Growth', icon: 'proposal', sentence: 'Proposed raising CAC.', detail: 'Expected to grow ARR faster.' },
+    { id: 'event-3', timestamp: new Date().toISOString(), actor: 'Risk', icon: 'rebuttal', sentence: 'Rebutted the proposal.', detail: 'Runway would drop below 3 months.' },
+  ];
+
+  test('returns all events unfiltered for a blank query', () => {
+    expect(searchTimelineEvents(events, '')).toEqual(events);
+    expect(searchTimelineEvents(events, '   ')).toEqual(events);
+  });
+
+  test('matches case-insensitively against the sentence', () => {
+    expect(searchTimelineEvents(events, 'proposed')).toEqual([events[1]]);
+  });
+
+  test('matches against the optional detail text', () => {
+    expect(searchTimelineEvents(events, 'runway')).toEqual([events[2]]);
+  });
+
+  test('returns an empty array when nothing matches', () => {
+    expect(searchTimelineEvents(events, 'nonexistent')).toEqual([]);
   });
 });
 

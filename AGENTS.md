@@ -776,6 +776,57 @@ categories). `code-reviewer` agent returned 0 critical/high/medium findings, 1 L
   event-type filter), extra comparison charts, accessibility refinements. `save_scenario`/
   `compare_scenarios` remain deprioritized per 18D/18F.
 
+## 18M. PHASE 23 (CONTINUED 9, FINAL) — REMAINING P1 CANDIDATES BATCH-IMPLEMENTED
+
+Amogh explicitly approved batching the remaining Phase 23 P1 candidates into one session (via
+`/orch-add-feature "complete all the remaining phase 23 tasks"`, confirmed through an
+`AskUserQuestion` since the established cadence up to this point was one Gate-1-approved candidate
+per session). This closes out Phase 23 entirely — no P1 candidates remain open except the
+deliberately-deprioritized `save_scenario`/`compare_scenarios` (see 18D/18F).
+
+TDD: added 4 new `timeline.test.ts` assertions for `searchTimelineEvents` and 3 new
+`scenarioViewModel.test.ts` assertions for `buildRunwayComparisonData` first, confirmed both red
+(`searchTimelineEvents`/`buildRunwayComparisonData is not a function`), then implemented. 133 tests
+green (7 new), `tsc -b` and `npm run build` clean, `oxlint src` shows only the same six
+pre-existing documented warnings (no new categories). `code-reviewer` agent returned 0
+critical/high findings, 1 MEDIUM (readability-only, addressed — see below) and 1 LOW (fixed by
+extracting a shared constant); verdict APPROVE.
+
+- **Timeline free-text search** (further slice of "richer audit/history view", after the actor
+  filter in 18L): `searchTimelineEvents(events, query)` in `timeline.ts` — pure, case-insensitive
+  substring match against `sentence` + optional `detail`, blank/whitespace query returns events
+  unchanged. `DecisionTimeline.tsx` composes it with the existing actor filter as
+  `searchTimelineEvents(filterTimelineEvents(events, actorFilter), query)` — actor narrows first,
+  search narrows further. Search input is local-only `useState` (not persisted, not cross-tab),
+  same category as `actorFilter`. The empty-state message was generalized from "No events from this
+  actor yet." to "No events match this filter." since it now covers either empty cause without being
+  misleading. Added an `aria-live="polite"` `sr-only` status paragraph announcing
+  `Showing N of M timeline events` — a11y refinement so screen-reader users get feedback when a
+  filter/search narrows the list, not just sighted users watching the list shrink.
+- **Scenario comparison chart** (the "extra comparison charts" P1 candidate): pure
+  `buildRunwayComparisonData(scenarios, capMonths = DEFAULT_RUNWAY_CAP_MONTHS)` in
+  `scenarioViewModel.ts` maps each *compared* scenario's `metrics.runwayMonths` to a
+  `{ name, runwayMonths }` chart point, capping a non-finite (infinite-runway) value at
+  `DEFAULT_RUNWAY_CAP_MONTHS` (36) so the Recharts axis stays finite — the cap constant is exported
+  and reused by `ScenarioComparisonChart.tsx`'s caption text so the two can't drift apart (a
+  code-review LOW finding, fixed). New `src/components/scenarios/ScenarioComparisonChart.tsx`
+  renders a read-only Recharts `BarChart` (mirrors `ExtraChart.tsx`'s color/tooltip/axis styling
+  conventions), rendered in `ScenarioWorkspace.tsx` below `ComparisonTable`, only when
+  `compared.length > 0`. Like `run_scenario`/scenario comparison generally, this never touches the
+  active model — it consumes the same `compared` view-model array `ComparisonTable` already renders.
+- **Accessibility refinements** (the last remaining P1 candidate): `ComparisonTable` gained a
+  `<caption className="sr-only">` summarizing the compared-scenario count, `scope="col"`/`scope="row"`
+  on header cells (previously unscoped `<th>`s), and `ScenarioWorkspace.tsx` gained an
+  `aria-live="polite"` `sr-only` region announcing how many scenarios are currently selected for
+  comparison — same pattern as the timeline's new status region, so a screen-reader user checking/
+  unchecking "Compare" gets the same feedback a sighted user gets from the table/chart appearing.
+- Non-goals for this batch (per CLAUDE.md's explicit Phase 23 candidate list, unchanged from 18D/18F):
+  `save_scenario`/`compare_scenarios` WebMCP tools remain deprioritized — the human-only UI already
+  covers scenario save/compare, and CLAUDE.md never made these mandatory.
+- Manual browser QA not performed this session (no browser automation access) — flagged as a
+  pending Phase 24 QA item alongside the existing backlog (WebMCP tools, action-plan toggle, Present
+  mode, timeline actor filter).
+
 ## 18J. PHASE 23 (CONTINUED 6) — 30-DAY ACTION PLAN RE-CONFIRMED AT GATE 1, STILL NOT IMPLEMENTED
 
 A second planning-only session (`/orch-add-feature`, stopped at Gate 1 again, per this session's
@@ -797,10 +848,12 @@ this section previously listed a stale pre-rewrite roadmap — corrected here):
 - Phase 20: P0 Saved scenarios and Forecast workspace — DONE
 - Phase 21: P0 Human approval workspace and board brief — DONE
 - Phase 22: P0 reliability, WebMCP integration, and demo readiness — DONE
-- Phase 23: P1 selective extensions — IN PROGRESS (`list_scenarios`, `generate_board_brief`, and
+- Phase 23: P1 selective extensions — DONE (`list_scenarios`, `generate_board_brief`, and
   `get_decision_log` tools done; **Present mode implemented** — see section 18H; **30-day action plan
-  implemented** — see section 18K; `save_scenario`, `compare_scenarios`, audit/history view, and
-  extra charts/a11y remain, in that priority order)
+  implemented** — see section 18K; **timeline actor filter implemented** — see section 18L;
+  **timeline free-text search, scenario comparison chart, and audit-view/table a11y refinements
+  implemented** — see section 18M; `save_scenario`/`compare_scenarios` remain deliberately
+  deprioritized per 18D/18F — not required by CLAUDE.md's Phase 23 candidate list)
 - Phase 24: Submission and final demo readiness
 
 Do not skip to a later Phase unless Amogh explicitly instructs you to do so.

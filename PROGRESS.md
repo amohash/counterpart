@@ -567,3 +567,32 @@ Gotchas: none new. Manual browser QA not performed this session (no browser auto
 flagged as a pending Phase 24 QA item alongside the existing backlog.
 Next: Phase 23 remaining P1 candidates (further audit/history view slices, extra comparison charts,
 accessibility refinements) — save_scenario/compare_scenarios stay deprioritized.
+
+## Phase 23 (continued 9, final) — DONE (2026-08-31)
+Files created/changed: src/timeline.ts (+searchTimelineEvents), src/timeline.test.ts (+4 tests),
+src/scenarioViewModel.ts (+buildRunwayComparisonData, +DEFAULT_RUNWAY_CAP_MONTHS),
+src/scenarioViewModel.test.ts (+3 tests), src/components/decision-room/DecisionTimeline.tsx
+(search box + aria-live status region), src/components/scenarios/ScenarioComparisonChart.tsx (new),
+src/components/scenarios/ScenarioWorkspace.tsx (renders comparison chart + table a11y: caption,
+scope attrs, aria-live compared-count region), AGENTS.md, PROGRESS.md.
+Done Check result: Amogh explicitly asked to "complete all the remaining phase 23 tasks" via
+`/orch-add-feature`; confirmed via `AskUserQuestion` to batch the remaining P1 candidates into one
+session instead of the established one-item-per-session cadence. Implemented all three remaining
+candidates from CLAUDE.md section 23/AGENTS.md 18L: further audit/history-view slice (timeline
+free-text search), extra comparison charts (scenario runway bar chart), and accessibility
+refinements (table caption/scope, two new aria-live status regions). TDD: wrote 7 new assertions
+first (4 for searchTimelineEvents, 3 for buildRunwayComparisonData), confirmed both red, then
+implemented to green. 133 tests pass (7 new), `tsc -b` and `npm run build` clean, `oxlint src` shows
+only the same six pre-existing documented warnings (no new categories). `code-reviewer` agent
+returned 0 critical/high findings (1 MEDIUM readability nit and 1 LOW duplicated-literal nit, both
+addressed); verdict APPROVE.
+Decisions worth remembering: see AGENTS.md section 18M for the full list — search composes with the
+existing actor filter (narrow-then-narrow), the shared `DEFAULT_RUNWAY_CAP_MONTHS` constant keeps
+the chart caption and the capping logic in sync, and `save_scenario`/`compare_scenarios` remain
+intentionally out of scope (not required by CLAUDE.md's Phase 23 list). Phase 23 is now fully DONE.
+Gotchas: an initial `formatter={(value: number) => ...}` annotation on the Recharts `Tooltip` broke
+`tsc -b` (Recharts' `Formatter` type accepts `ValueType | undefined`, not a bare `number`) — reverted
+to inferred typing, matching the pattern review flagged as a nit rather than a real type-safety gap.
+Manual browser QA not performed this session (no browser automation access) — flagged as a pending
+Phase 24 QA item alongside the existing backlog.
+Next: Phase 24 — Submission and final demo readiness.

@@ -46,6 +46,32 @@ export function toScenarioViewModels(scenarios: DerivedScenario[]): ScenarioView
   }));
 }
 
+export interface RunwayComparisonPoint {
+  name: string;
+  runwayMonths: number;
+}
+
+/** Default runway cap (in months) used by `buildRunwayComparisonData` and
+ * displayed in `ScenarioComparisonChart`'s caption — kept in one place so the
+ * two never drift apart. */
+export const DEFAULT_RUNWAY_CAP_MONTHS = 36;
+
+/** Maps compared scenarios' runway metric to chart-friendly points, capping a
+ * non-finite (infinite, i.e. never-runs-out) runway at `capMonths` so the
+ * comparison chart's axis stays finite. Pure — used by
+ * `ScenarioComparisonChart`. */
+export function buildRunwayComparisonData(
+  scenarios: ScenarioViewModel[],
+  capMonths = DEFAULT_RUNWAY_CAP_MONTHS,
+): RunwayComparisonPoint[] {
+  return scenarios.map((scenario) => ({
+    name: scenario.name,
+    runwayMonths: Number.isFinite(scenario.metrics.runwayMonths)
+      ? scenario.metrics.runwayMonths
+      : capMonths,
+  }));
+}
+
 /** Diffs a full assumptions draft (from the workspace's edit form) against the
  * live base assumptions, keeping only the keys that actually changed. This is
  * the inverse of applying `overrides` on top of `baseAssumptions`. */

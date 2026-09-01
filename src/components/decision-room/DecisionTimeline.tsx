@@ -6,13 +6,19 @@ import {
   FlaskConical,
   History,
   ListChecks,
+  Search,
   Send,
   Sparkles,
   X,
   type LucideIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { filterTimelineEvents, type TimelineEvent, type TimelineIconKey } from '../../timeline';
+import {
+  filterTimelineEvents,
+  searchTimelineEvents,
+  type TimelineEvent,
+  type TimelineIconKey,
+} from '../../timeline';
 
 const ICONS: Record<TimelineIconKey, LucideIcon> = {
   read: FileText,
@@ -37,44 +43,64 @@ interface DecisionTimelineProps {
 
 export function DecisionTimeline({ events }: DecisionTimelineProps) {
   const [actorFilter, setActorFilter] = useState('all');
+  const [query, setQuery] = useState('');
   const actors = useMemo(() => Array.from(new Set(events.map((event) => event.actor))), [events]);
   const filteredEvents = useMemo(
-    () => filterTimelineEvents(events, actorFilter),
-    [events, actorFilter],
+    () => searchTimelineEvents(filterTimelineEvents(events, actorFilter), query),
+    [events, actorFilter, query],
   );
 
   return (
     <section className="rounded-xl bg-[#f8f7f3] p-4 shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 text-sm font-semibold tracking-[-0.01em]">
           <History aria-hidden="true" className="text-[#176f55]" size={16} strokeWidth={1.9} />
           Decision timeline
         </h2>
-        {actors.length > 1 && (
-          <label className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.06em] text-[#7a8880]">
-            <span className="sr-only">Filter timeline by actor</span>
-            <select
-              aria-label="Filter timeline by actor"
-              className="rounded-md border border-[#d8d4c8] bg-white px-1.5 py-1 text-[10px] font-medium normal-case tracking-normal text-[#25312b]"
-              onChange={(event) => setActorFilter(event.target.value)}
-              value={actorFilter}
-            >
-              <option value="all">All actors</option>
-              {actors.map((actor) => (
-                <option key={actor} value={actor}>
-                  {actor}
-                </option>
-              ))}
-            </select>
+        <div className="flex items-center gap-2">
+          <label className="flex min-h-8 items-center gap-1.5 rounded-md border border-[#d8d4c8] bg-white px-1.5 text-[10px] text-[#7a8880]">
+            <span className="sr-only">Search timeline</span>
+            <Search aria-hidden="true" size={12} strokeWidth={2} />
+            <input
+              aria-label="Search timeline"
+              className="w-28 bg-transparent text-[10px] font-medium text-[#25312b] focus:shadow-none sm:w-36"
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search…"
+              type="search"
+              value={query}
+            />
           </label>
-        )}
+          {actors.length > 1 && (
+            <label className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.06em] text-[#7a8880]">
+              <span className="sr-only">Filter timeline by actor</span>
+              <select
+                aria-label="Filter timeline by actor"
+                className="rounded-md border border-[#d8d4c8] bg-white px-1.5 py-1 text-[10px] font-medium normal-case tracking-normal text-[#25312b]"
+                onChange={(event) => setActorFilter(event.target.value)}
+                value={actorFilter}
+              >
+                <option value="all">All actors</option>
+                {actors.map((actor) => (
+                  <option key={actor} value={actor}>
+                    {actor}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
       </div>
+      <p aria-live="polite" className="sr-only">
+        {events.length === 0
+          ? 'No timeline events yet.'
+          : `Showing ${filteredEvents.length} of ${events.length} timeline events.`}
+      </p>
       {events.length === 0 ? (
         <p className="text-xs leading-5 text-[#526059]">
           Human and agent decisions will appear here as they happen.
         </p>
       ) : filteredEvents.length === 0 ? (
-        <p className="text-xs leading-5 text-[#526059]">No events from this actor yet.</p>
+        <p className="text-xs leading-5 text-[#526059]">No events match this filter.</p>
       ) : (
         <ul className="flex flex-col gap-2.5">
           {filteredEvents.map((event) => {

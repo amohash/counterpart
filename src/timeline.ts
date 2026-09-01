@@ -48,6 +48,18 @@ export function filterTimelineEvents(events: TimelineEvent[], actor: string): Ti
   return events.filter((event) => event.actor === actor);
 }
 
+/** Filters a timeline to events whose sentence or detail contains `query`
+ * (case-insensitive substring match). A blank/whitespace-only query returns
+ * the events unchanged. Pure — used by the Decision timeline's search box. */
+export function searchTimelineEvents(events: TimelineEvent[], query: string): TimelineEvent[] {
+  const trimmed = query.trim().toLowerCase();
+  if (trimmed === '') return events;
+  return events.filter((event) => {
+    const haystack = `${event.sentence} ${event.detail ?? ''}`.toLowerCase();
+    return haystack.includes(trimmed);
+  });
+}
+
 /** Keeps the in-process id counter ahead of any events loaded from
  * localStorage, mirroring proposal.ts's observeProposalIds. */
 export function observeTimelineEventIds(events: TimelineEvent[]): void {

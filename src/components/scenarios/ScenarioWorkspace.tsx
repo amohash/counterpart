@@ -8,6 +8,8 @@ import {
   ShieldCheck,
   Trash2,
 } from 'lucide-react';
+import { buildRunwayComparisonData } from '../../scenarioViewModel';
+import { ScenarioComparisonChart } from './ScenarioComparisonChart';
 
 export type ScenarioStatus = 'healthy' | 'watch' | 'risk';
 
@@ -358,20 +360,24 @@ function ComparisonTable({ scenarios }: { scenarios: ScenarioViewModel[] }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-[#dedfd9]">
       <table className="w-full min-w-[760px] border-collapse text-left text-xs">
+        <caption className="sr-only">
+          Comparison of {scenarios.length} scenario{scenarios.length === 1 ? '' : 's'} against
+          Current Plan
+        </caption>
         <thead className="bg-[#ecece6] text-[10px] font-semibold uppercase tracking-[0.08em] text-[#526059]">
           <tr>
-            <th className="px-3 py-3">Scenario</th>
-            <th className="px-3 py-3">Status</th>
-            <th className="px-3 py-3">Runway</th>
-            <th className="px-3 py-3">Final ARR</th>
-            <th className="px-3 py-3">LTV / CAC</th>
-            <th className="px-3 py-3">Monthly burn</th>
+            <th scope="col" className="px-3 py-3">Scenario</th>
+            <th scope="col" className="px-3 py-3">Status</th>
+            <th scope="col" className="px-3 py-3">Runway</th>
+            <th scope="col" className="px-3 py-3">Final ARR</th>
+            <th scope="col" className="px-3 py-3">LTV / CAC</th>
+            <th scope="col" className="px-3 py-3">Monthly burn</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#dedfd9] bg-white">
           {scenarios.map((scenario) => (
             <tr key={scenario.id}>
-              <th className="px-3 py-3.5 text-sm font-semibold text-[#17211d]">{scenario.name}</th>
+              <th scope="row" className="px-3 py-3.5 text-sm font-semibold text-[#17211d]">{scenario.name}</th>
               <td className="px-3 py-3.5"><StatusBadge scenario={scenario} /></td>
               <td className="px-3 py-3.5 tabular-nums">
                 <p className="font-semibold text-[#25312b]">{formatRunway(scenario.metrics.runwayMonths)}</p>
@@ -457,7 +463,13 @@ export function ScenarioWorkspace(props: ScenarioWorkspaceProps) {
             Deltas are measured against Current Plan. Lower burn is favorable.
           </p>
         </div>
+        <p aria-live="polite" className="sr-only">
+          {compared.length === 0
+            ? 'No scenarios selected for comparison.'
+            : `Comparing ${compared.length} scenario${compared.length === 1 ? '' : 's'}.`}
+        </p>
         <ComparisonTable scenarios={compared} />
+        {compared.length > 0 && <ScenarioComparisonChart data={buildRunwayComparisonData(compared)} />}
       </section>
     </div>
   );

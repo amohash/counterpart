@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import type { ScenarioViewModel } from './components/scenarios/ScenarioWorkspace';
 import type { DerivedScenario } from './scenarios';
-import { draftToOverrides, toScenarioViewModels } from './scenarioViewModel';
+import { buildRunwayComparisonData, draftToOverrides, toScenarioViewModels } from './scenarioViewModel';
 
 function makeScenario(overrides: Partial<DerivedScenario> = {}): DerivedScenario {
   return {
@@ -115,5 +116,56 @@ describe('draftToOverrides', () => {
     const overrides = draftToOverrides({ ...base }, base);
 
     expect(overrides).toEqual({});
+  });
+});
+
+describe('buildRunwayComparisonData', () => {
+  function makeViewModel(overrides: Partial<ScenarioViewModel> = {}): ScenarioViewModel {
+    return {
+      id: 'current-plan',
+      name: 'Current Plan',
+      description: '',
+      status: 'healthy',
+      statusLabel: 'Healthy',
+      isCustom: false,
+      metrics: { runwayMonths: 8, finalArr: 150000, ltvOverCac: 3.5, monthlyBurn: 8000 },
+      deltas: { runwayMonths: 0, finalArr: 0, ltvOverCac: 0, monthlyBurn: 0 },
+      assumptions: {
+        startingMRR: 10000,
+        newCustomersPerMonth: 10,
+        arpu: 100,
+        monthlyChurnPct: 5,
+        cac: 500,
+        grossMarginPct: 70,
+        monthlyOpex: 20000,
+        months: 12,
+      },
+      ...overrides,
+    };
+  }
+
+  it('maps each scenario to a chart-friendly name/runway pair', () => {
+    const data = buildRunwayComparisonData([
+      makeViewModel({ id: 'a', name: 'Current Plan', metrics: { runwayMonths: 8, finalArr: 0, ltvOverCac: 0, monthlyBurn: 0 } }),
+      makeViewModel({ id: 'b', name: 'Cost Control', metrics: { runwayMonths: 14, finalArr: 0, ltvOverCac: 0, monthlyBurn: 0 } }),
+    ]);
+
+    expect(data).toEqual([
+      { name: 'Current Plan', runwayMonths: 8 },
+      { name: 'Cost Control', runwayMonths: 14 },
+    ]);
+  });
+
+  it('caps a non-finite (infinite) runway at the given cap so the chart stays finite', () => {
+    const data = buildRunwayComparisonData(
+      [makeViewModel({ name: 'Growth Bet', metrics: { runwayMonths: Number.POSITIVE_INFINITY, finalArr: 0, ltvOverCac: 0, monthlyBurn: 0 } })],
+      36,
+    );
+
+    expect(data).toEqual([{ name: 'Growth Bet', runwayMonths: 36 }]);
+  });
+
+  it('returns an empty array for an empty scenario list', () => {
+    expect(buildRunwayComparisonData([])).toEqual([]);
   });
 });
