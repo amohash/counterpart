@@ -1,6 +1,6 @@
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { CheckCheck, MessageSquareText, Network } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AssumptionsPanel } from './components/AssumptionsPanel';
 import { DecisionTimeline } from './components/decision-room/DecisionTimeline';
 import { HealthGrid } from './components/decision-room/HealthGrid';
@@ -12,6 +12,7 @@ import { MrrChart } from './components/MrrChart';
 import { NavTabs, type ViewId } from './components/NavTabs';
 import { ProjectionTable } from './components/ProjectionTable';
 import { QuestionCard } from './components/QuestionCard';
+import { ScenarioWorkspace, type ScenarioDraft } from './components/scenarios';
 import { WebmcpBadge } from './components/WebmcpBadge';
 import { useAnnotations } from './hooks/useAnnotations';
 import { useCharts } from './hooks/useCharts';
@@ -20,12 +21,14 @@ import { useHighlight } from './hooks/useHighlight';
 import { useModelState } from './hooks/useModelState';
 import { useProposals } from './hooks/useProposals';
 import { useQuestions } from './hooks/useQuestions';
+import { useScenarios } from './hooks/useScenarios';
 import { useTimeline } from './hooks/useTimeline';
 import { useWebmcp } from './hooks/useWebmcp';
 import { computeHealthMetrics } from './health';
 import type { Assumptions } from './model';
 import { computeRecommendations, type Recommendation } from './recommendations';
 import { computeRisks } from './risks';
+import { draftToOverrides, toScenarioViewModels } from './scenarioViewModel';
 
 const HUMAN_ACTOR = 'Amogh';
 
@@ -48,6 +51,13 @@ function App() {
   const { charts, addChart } = useCharts();
   const { highlightedIds, highlight } = useHighlight();
   const { events, addEvent } = useTimeline();
+  const scenarios = useScenarios(assumptions);
+  const [selectedScenarioId, setSelectedScenarioId] = useState(scenarios.activeScenarioId);
+  // Follow whichever scenario becomes active (activate/duplicate/save-new/reset all
+  // update activeScenarioId), while still letting "View details" browse other cards.
+  useEffect(() => {
+    setSelectedScenarioId(scenarios.activeScenarioId);
+  }, [scenarios.activeScenarioId]);
 
   const proposeWithTimeline = (
     targetId: keyof Assumptions,
@@ -78,6 +88,49 @@ function App() {
     reject(id);
     if (proposal) {
       addEvent(HUMAN_ACTOR, 'reject', `rejected the proposed change to ${proposal.targetId}.`);
+    }
+  };
+
+  const activateScenarioWithTimeline = (id: string) => {
+    scenarios.activate(id);
+    const scenario = scenarios.scenarios.find((item) => item.id === id);
+    if (scenario) addEvent(HUMAN_ACTOR, 'scenario', `activated the "${scenario.name}" scenario for exploration.`);
+  };
+
+  const duplicateScenarioWithTimeline = (id: string) => {
+    const scenario = scenarios.scenarios.find((item) => item.id === id);
+    scenarios.duplicate(id);
+    if (scenario) addEvent(HUMAN_ACTOR, 'scenario', `duplicated the "${scenario.name}" scenario.`);
+  };
+
+  const saveScenarioWithTimeline = (id: string, draft: ScenarioDraft) => {
+    const overrides = draftToOverrides(draft.assumptions, assumptions);
+    scenarios.save({ id, name: draft.name, description: draft.description, overrides });
+    addEvent(HUMAN_ACTOR, 'scenario', `saved the "${draft.name}" scenario.`);
+  };
+
+  const deleteScenarioWithTimeline = (id: string) => {
+    const scenario = scenarios.scenarios.find((item) => item.id === id);
+    scenarios.remove(id);
+    if (scenario) addEvent(HUMAN_ACTOR, 'scenario', `deleted the "${scenario.name}" scenario.`);
+  };
+
+  const resetScenariosWithTimeline = () => {
+    scenarios.reset();
+    setSelectedScenarioId('current-plan');
+    addEvent(HUMAN_ACTOR, 'scenario', 'reset saved scenarios to the seeded defaults.');
+  };
+
+  const toggleComparedWithTimeline = (id: string) => {
+    const scenario = scenarios.scenarios.find((item) => item.id === id);
+    const wasCompared = scenarios.comparedScenarioIds.includes(id);
+    scenarios.toggleCompared(id);
+    if (scenario) {
+      addEvent(
+        HUMAN_ACTOR,
+        'scenario',
+        `${wasCompared ? 'removed' : 'added'} "${scenario.name}" ${wasCompared ? 'from' : 'to'} the scenario comparison.`,
+      );
     }
   };
 
@@ -151,9 +204,19 @@ function App() {
           )}
 
           {view === 'scenarios' && (
-            <section className="rounded-xl border border-dashed border-[#aeb4ae] bg-[#f8f7f3] p-6 text-sm text-[#526059]">
-              Saved scenarios are coming in a later phase.
-            </section>
+            <ScenarioWorkspace
+              scenarios={toScenarioViewModels(scenarios.scenarios)}
+              selectedScenarioId={selectedScenarioId}
+              activeScenarioId={scenarios.activeScenarioId}
+              comparisonIds={scenarios.comparedScenarioIds}
+              onSelect={setSelectedScenarioId}
+              onActivate={activateScenarioWithTimeline}
+              onDuplicate={duplicateScenarioWithTimeline}
+              onSaveCustom={saveScenarioWithTimeline}
+              onDeleteCustom={deleteScenarioWithTimeline}
+              onReset={resetScenariosWithTimeline}
+              onToggleComparison={toggleComparedWithTimeline}
+            />
           )}
 
           {view === 'forecast' && (

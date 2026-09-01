@@ -862,144 +862,133 @@ Done Check:
 
 ---
 
-## PHASE 19 — End-to-end human-agent workflow
+## PHASE 19 — P0 Decision Room and deterministic financial intelligence
 
 Goal:
-Make the core WebMCP collaboration flow bulletproof.
-
-Required flow:
-get_model_state
-→ risk understanding
-→ run_scenario
-→ recommendation
-→ propose_edit
-→ human approval/rejection
-→ model update
-→ timeline event.
+Make the Decision Room the default product surface, so Counterpart immediately
+feels like an AI counterpart for financial decisions rather than a calculator.
 
 Tasks:
-- test the complete flow;
-- fix broken state propagation;
-- verify scenario isolation;
-- verify approval semantics;
-- verify timeline accuracy;
-- verify metrics/charts update.
+- add the application shell and navigation: Decision Room, Scenarios, Forecast,
+  Reports, workspace context, active-model status, and Reset demo;
+- implement four interpreted health cards: runway, ARR, LTV/CAC, monthly burn;
+- implement deterministic risks from the rules in Sections 8 and 13;
+- implement grounded recommendations with rationale, relevant assumptions,
+  expected effect, scenario action, and proposal action;
+- add a locally persisted human-agent decision timeline;
+- preserve the current model, charts, proposal behavior, and all eight WebMCP tools.
 
 Done Check:
-- full flow works from a fresh state;
-- rejected proposals do not alter the model;
-- approved proposals do;
-- timeline accurately records the sequence.
+A fresh user understands the financial state, material risks, and the agent's
+recommendation within 30 seconds without using a prompt.
 
 ---
 
-## PHASE 20 — Multi-agent Growth/Risk workflow audit
+## PHASE 20 — P0 Saved scenarios and forecast workspace
 
 Goal:
-Make opposing-agent collaboration reliable and easy to demonstrate.
+Let founders compare safe alternatives without silently changing the live plan.
 
 Tasks:
-- verify Growth and Risk identities;
-- verify proposal authorship;
-- verify rebuttal threads;
-- verify cross-tab synchronization;
-- verify the human can arbitrate;
-- verify both Chrome and ChatGPT in-app browser where available.
+- add localStorage-backed scenarios with Current Plan, Cost Control, Retention
+  Recovery, and Growth Bet seeded on first load;
+- support scenario view, activate, duplicate, save, delete user-created, reset,
+  and comparison states;
+- show runway, ARR, LTV/CAC, burn, status, and change versus Current Plan;
+- reorganize the existing calculator as the Forecast surface using the groups
+  defined in Section 13; preserve all calculations, annotation, and chart tools;
+- record scenario actions in the decision timeline.
 
 Done Check:
-- Growth proposes;
-- Risk rebuts;
-- both arguments render on the same proposal;
-- human accepts/rejects;
-- state synchronizes correctly.
+A founder can compare at least three scenarios, understand the tradeoff, and
+confirm that scenario exploration did not mutate the active model.
 
 ---
 
-## PHASE 21 — Judge experience and demo reliability
+## PHASE 21 — P0 Human approval workspace and board brief
 
 Goal:
-Make the first-run experience optimized for judges without adding unnecessary functionality.
+Make the human approval loop and decision outcome unmistakable.
 
 Tasks:
-- verify default preset;
-- verify first-screen narrative;
-- verify WebMCP status is understandable;
-- verify important actions are discoverable;
-- remove accidental dead ends;
-- verify judge instructions;
-- test the two-minute demo path.
-
-Do not add a generic chatbot.
+- create a first-class Pending Decisions surface that shows current/proposed
+  values, rationale, Growth/Risk identity and rebuttals, and calculated scenario
+  impacts on runway, ARR, LTV/CAC, and burn;
+- add approve, reject, and explore-impact interactions with timeline/audit
+  entries, success feedback, and no silent mutation;
+- create the Reports surface and deterministic board brief: snapshot, key risks,
+  recommended/approved actions, pending decisions, and outlook;
+- add copy, Markdown/text download, regenerate, and current/active-scenario
+  report selection;
+- add the SaaS in trouble, Healthy growth, and Efficiency reset demo presets.
 
 Done Check:
-A fresh judge can understand the product quickly and complete the primary demo flow without developer assistance beyond the documented WebMCP setup.
+From a fresh load, a founder can review a proposal, make the final decision,
+observe metrics update only after approval, and generate a usable board update.
 
 ---
 
-## PHASE 22 — Submission documentation audit
+## PHASE 22 — P0 reliability, WebMCP integration, and demo readiness
 
 Goal:
-Ensure the repository is ready for Devpost submission.
+Make the upgraded P0 experience dependable for judges in both WebMCP surfaces.
 
 Tasks:
-- audit README;
-- audit DEMO_SCRIPT.md;
-- audit LICENSE;
-- audit setup instructions;
-- audit WebMCP explanation;
-- audit judge instructions;
-- document pre-existing vs hackathon-added work where applicable;
-- verify no unsupported claims;
-- create/update `HACKATHON.md` if required.
+- verify every existing WebMCP tool against the upgraded UI and live React state;
+- ensure meaningful agent actions add timeline events and tool calls remain
+  logged with `[webmcp]`;
+- add loading, empty, error, validation, toast, responsive, and accessibility
+  states for P0 surfaces;
+- test reset/demo presets, local persistence, cross-tab behavior, board brief,
+  proposal outcomes, and a complete fresh-load demo flow;
+- update README and DEMO_SCRIPT only to reflect implemented behavior.
 
 Done Check:
-A reviewer can understand the product, WebMCP implementation, setup, judge flow, and hackathon-era changes from the repository.
+The full human-agent journey works reliably without a backend or external LLM:
+read → analyze → scenario → propose → human decision → updated model → timeline
+→ board brief.
 
 ---
 
-## PHASE 23 — Final production QA
+## PHASE 23 — P1 selective extensions
 
 Goal:
-Perform a final release-quality test.
+Add only high-value enhancements after P0 is complete and polished.
 
-Tasks:
-- production build;
-- unit tests;
-- TypeScript;
-- lint if configured;
-- clean console;
-- responsive QA;
-- WebMCP QA;
-- proposal QA;
-- scenario QA;
-- multi-agent QA;
-- board brief QA;
-- reset QA;
-- deployment QA.
+Candidate work, in this order:
+- meaningful WebMCP tools only where needed: `list_scenarios`, `save_scenario`,
+  `compare_scenarios`, `generate_board_brief`, and `get_decision_log`;
+- Present mode for founder/investor walkthroughs;
+- a lightweight 30-day action plan with local completion state;
+- enhanced local audit/history view;
+- additional comparison charts and refined responsive/accessibility behavior.
+
+Do not begin a candidate until the prior candidate is complete, tested, and
+clearly improves the primary decision workflow. Do not add authentication,
+billing, external integrations, a database, a backend, or generic chat.
 
 Done Check:
-No known blocking defects remain.
-
-Do not add features during this Phase.
+Every implemented P1 item is demonstrably useful to human-agent collaboration
+and does not compromise P0 reliability.
 
 ---
 
-## PHASE 24 — Final demo rehearsal
+## PHASE 24 — Submission and final demo readiness
 
 Goal:
-Prepare the product for the under-three-minute video.
+Verify the finished upgraded product and prepare its under-three-minute demo.
 
 Tasks:
-- rehearse the exact judge path;
-- verify Growth/Risk disagreement can be demonstrated;
-- verify the human approval moment is visually clear;
-- verify board brief generation;
-- update `DEMO_SCRIPT.md` only where needed;
-- keep narration under three minutes;
-- do not add product features.
+- production build, tests, TypeScript, source lint, console, responsive, and
+  WebMCP QA;
+- rehearse the exact decision-room path including Growth/Risk disagreement,
+  human approval, scenario comparison, timeline, and board brief;
+- audit README, DEMO_SCRIPT, LICENSE, live URL, judge setup, and public-repo
+  requirements; document hackathon-era work accurately.
 
 Done Check:
-The complete demonstration can be performed reliably in under three minutes.
+The upgraded product can be demonstrated reliably in under three minutes and a
+judge can test its WebMCP collaboration flow without developer intervention.
 
 ---
 

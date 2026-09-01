@@ -491,17 +491,60 @@ Do not reintroduce the deprecated API behavior.
 
 # 19. CURRENT ROADMAP
 
-The next planned Phases are defined in `CLAUDE.md`:
+The next planned Phases are defined in `CLAUDE.md` (roadmap rewritten as of Phase 19/20;
+this section previously listed a stale pre-rewrite roadmap — corrected here):
 
-- Phase 18: WebMCP registration/tool audit
-- Phase 19: End-to-end human-agent workflow
-- Phase 20: Multi-agent Growth/Risk workflow audit
-- Phase 21: Judge experience/demo reliability
-- Phase 22: Submission documentation audit
-- Phase 23: Final production QA
-- Phase 24: Final demo rehearsal
+- Phase 17: Hackathon compliance audit — DONE
+- Phase 18: WebMCP registration and tool audit — DONE
+- Phase 19: P0 Decision Room and deterministic financial intelligence — DONE
+- Phase 20: P0 Saved scenarios and Forecast workspace — DONE
+- Phase 21: P0 Human approval workspace and board brief
+- Phase 22: P0 reliability, WebMCP integration, and demo readiness
+- Phase 23: P1 selective extensions
+- Phase 24: Submission and final demo readiness
 
 Do not skip to a later Phase unless Amogh explicitly instructs you to do so.
+
+---
+
+# 19A. PHASE 20 DURABLE DECISIONS
+
+- `src/scenarios.ts` (+ `.test.ts`) and `src/hooks/useScenarios.ts` were already built (by a
+  prior Codex session) with correct domain logic before this Phase started: seeded Current
+  Plan/Cost Control/Retention Recovery/Growth Bet, save/duplicate/delete/activate/reset/compare,
+  versioned localStorage schema at key `counterpart-scenarios`. This Phase reconciled and wired
+  that work rather than rebuilding it — audit before rewriting.
+- `src/components/scenarios/ScenarioWorkspace.tsx` (also pre-existing) was built against its own
+  independent view-model vocabulary (`ScenarioViewModel`, `ScenarioStatus =
+  'healthy'|'watch'|'risk'`, `ScenarioDraft`, separate `selectedScenarioId`/`activeScenarioId`).
+  This did not match `scenarios.ts`'s `DerivedScenario`/`ScenarioStatus =
+  'critical'|'at-risk'|'healthy'`. Do not merge these two type vocabularies — keep the seam.
+- `src/scenarioViewModel.ts` (+ `.test.ts`) is the new, single adapter between the two: maps
+  `critical→risk`/`at-risk→watch`/`healthy→healthy` for the workspace's status enum, with status
+  labels `Critical`/`At risk`/`Healthy` (matching CLAUDE.md §8's own risk-severity wording — do
+  not relabel `critical` as anything softer than "Critical"), and `draftToOverrides` diffs a full
+  `ScenarioAssumptionsView` draft against live `Assumptions` to produce a minimal
+  `Partial<Assumptions>` override for `saveScenario`.
+- `App.tsx` treats `selectedScenarioId` (which card's detail panel is open) as transient local
+  `useState`, separate from `useScenarios`'s persisted `activeScenarioId`. A `useEffect` re-syncs
+  `selectedScenarioId` to `activeScenarioId` whenever the latter changes (activate/duplicate/
+  save-new/reset), so the detail panel follows whichever scenario just became active, while
+  "View details" still lets a user browse other cards without side effects.
+- All six scenario actions (view/activate/duplicate/save/delete/reset/compare toggle) are wrapped
+  in `App.tsx` as `*WithTimeline` functions logging via `addEvent(..., 'scenario', ...)` — the
+  `scenario` `TimelineIconKey` already existed in `timeline.ts` from an earlier session and did
+  not need extending.
+- Scenario activation/exploration never mutates the live model or `assumptions` state — verified
+  in manual Chrome QA: activating "Cost Control" in the Scenarios tab left the Decision Room's
+  runway/ARR/burn and the Forecast tab's assumptions completely unchanged; only the timeline
+  recorded the exploration.
+- The Forecast tab's pre-existing four-group `AssumptionsPanel.tsx` layout (Revenue engine /
+  Retention and unit economics / Operating plan / Forecast horizon) was verified, not rewritten:
+  calculations, chart, projection table, and prior proposal-driven values all render correctly.
+- Manually verified in Chrome (dev server): Scenarios tab renders all 4 seeded scenarios with
+  correct metrics/status/comparison deltas; activating a scenario logs a timeline event and
+  updates the detail panel without touching Current Plan; no console errors beyond the expected
+  `[webmcp] document.modelContext not available yet` warning outside a WebMCP-flagged browser.
 
 ---
 

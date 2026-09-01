@@ -264,3 +264,26 @@ needs a declining-customer-base scenario (high churn) to land in that window, no
 also caught and fixed a `$-13,545`-style negative-currency formatting bug in `health.ts` during
 manual QA before it shipped.
 Next: Phase 20
+
+## Phase 20 — DONE (2026-08-31)
+Files created/changed: src/scenarioViewModel.ts (+ .test.ts), src/App.tsx, AGENTS.md,
+PROGRESS.md. src/scenarios.ts, src/scenarios.test.ts, src/hooks/useScenarios.ts,
+src/components/scenarios/{ScenarioWorkspace,index}.tsx, and the AssumptionsPanel.tsx four-group
+regrouping had already been built uncommitted by a prior Codex session; this Phase audited,
+reconciled type mismatches, and wired them into the app rather than rebuilding them.
+Done Check result: 88 tests green (6 new for the adapter), `tsc -b` and `npm run build` clean,
+lint shows only the pre-existing vendored-bundle warnings. Manual Chrome QA (dev server): Scenarios
+tab renders all 4 seeded scenarios with correct metrics/status/comparison deltas; activating "Cost
+Control" logged a timeline event and updated the detail panel without changing Current Plan's
+health metrics or Forecast assumptions; Forecast tab's four-group layout, chart, and projection
+table all rendered correctly with no regression; no unexpected console errors.
+Decisions worth remembering: see AGENTS.md section 19A (Phase 20 durable decisions) — the
+scenarioViewModel.ts adapter reconciling two independently-built status vocabularies, the
+selectedScenarioId/activeScenarioId split, and the *WithTimeline wrapper pattern extended to all
+six scenario actions.
+Gotchas: the adapter's first draft mislabeled the worst-severity scenario status ("critical") as
+"At risk" (a softer label already used for the middle tier) — caught during manual Chrome QA before
+shipping and corrected to Critical/At risk/Healthy, matching CLAUDE.md section 8's own risk wording.
+Also discovered AGENTS.md's section 19 roadmap list was stale (referenced Phase 20-24 names from
+before CLAUDE.md's Phase 17-24 rewrite); corrected it in this Phase's handoff.
+Next: Phase 21
