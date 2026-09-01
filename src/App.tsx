@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
-import { CheckCheck, MessageSquareText, Network } from 'lucide-react';
+import { CheckCheck, MessageSquareText, Network, Presentation } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AssumptionsPanel } from './components/AssumptionsPanel';
 import { DecisionTimeline } from './components/decision-room/DecisionTimeline';
@@ -11,6 +11,7 @@ import { ExtraChart } from './components/ExtraChart';
 import { Headline } from './components/Headline';
 import { MrrChart } from './components/MrrChart';
 import { NavTabs, type ViewId } from './components/NavTabs';
+import { PresentModeBar } from './components/PresentModeBar';
 import { PresetSwitcher } from './components/PresetSwitcher';
 import { ProjectionTable } from './components/ProjectionTable';
 import { QuestionCard } from './components/QuestionCard';
@@ -22,6 +23,7 @@ import { useCharts } from './hooks/useCharts';
 import { useCrossTabSync } from './hooks/useCrossTabSync';
 import { useHighlight } from './hooks/useHighlight';
 import { useModelState } from './hooks/useModelState';
+import { usePresentMode } from './hooks/usePresentMode';
 import { useProposals } from './hooks/useProposals';
 import { useQuestions } from './hooks/useQuestions';
 import { useScenarios } from './hooks/useScenarios';
@@ -63,6 +65,17 @@ function App() {
   useEffect(() => {
     setSelectedScenarioId(scenarios.activeScenarioId);
   }, [scenarios.activeScenarioId]);
+  const presentMode = usePresentMode();
+  // Drive the existing view/scenario-selection state from the current step
+  // rather than giving Present mode its own routing. View-only: this never
+  // calls scenarios.activate, so it can never mutate the live model.
+  useEffect(() => {
+    if (!presentMode.isPresentMode) return;
+    setView(presentMode.currentStep.view);
+    if (presentMode.currentStep.scenarioId) {
+      setSelectedScenarioId(presentMode.currentStep.scenarioId);
+    }
+  }, [presentMode.isPresentMode, presentMode.currentStep]);
 
   const proposeWithTimeline = (
     targetId: keyof Assumptions,
@@ -223,11 +236,30 @@ function App() {
                   <p className="text-xs text-[#7a8880]">An AI financial decision partner. You make the call.</p>
                 </div>
               </div>
-              <WebmcpBadge isDetected={isWebmcpDetected} />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={presentMode.isPresentMode ? presentMode.exit : presentMode.enter}
+                  aria-pressed={presentMode.isPresentMode}
+                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold transition ${
+                    presentMode.isPresentMode
+                      ? 'bg-[#17211d] text-[#f8f7f3]'
+                      : 'bg-[#e9ebe6] text-[#526059] hover:bg-[#dde0d9] hover:text-[#25312b]'
+                  }`}
+                >
+                  <Presentation aria-hidden="true" size={14} strokeWidth={1.9} />
+                  {presentMode.isPresentMode ? 'Exit present mode' : 'Present'}
+                </button>
+                <WebmcpBadge isDetected={isWebmcpDetected} />
+              </div>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <NavTabs active={view} onChange={setView} />
-              <PresetSwitcher activePresetId={activePresetId} onSelect={loadPresetWithTimeline} />
+              <PresetSwitcher
+                activePresetId={activePresetId}
+                onSelect={loadPresetWithTimeline}
+                disabled={presentMode.isPresentMode}
+              />
             </div>
           </div>
         </header>
@@ -320,6 +352,7 @@ function App() {
                   onRejectProposal={rejectWithTimeline}
                   annotations={annotations}
                   highlightedIds={highlightedIds}
+                  disabled={presentMode.isPresentMode}
                 />
                 <div className="flex min-w-0 flex-col gap-5">
                   <MrrChart rows={output.rows} />
@@ -351,6 +384,19 @@ function App() {
             />
           )}
         </main>
+
+        <AnimatePresence>
+          {presentMode.isPresentMode && (
+            <PresentModeBar
+              step={presentMode.currentStep}
+              stepIndex={presentMode.stepIndex}
+              totalSteps={presentMode.totalSteps}
+              onPrev={presentMode.prev}
+              onNext={presentMode.next}
+              onExit={presentMode.exit}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </MotionConfig>
   );

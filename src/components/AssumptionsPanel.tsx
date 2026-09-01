@@ -39,6 +39,9 @@ interface AssumptionsPanelProps {
   onRejectProposal: (id: string) => void;
   annotations: Partial<Record<keyof Assumptions, string>>;
   highlightedIds: ReadonlySet<keyof Assumptions>;
+  /** Set while Present mode is active, so an investor walkthrough can't be
+   * knocked off-script by an accidental edit. */
+  disabled?: boolean;
 }
 
 export function AssumptionsPanel({
@@ -50,6 +53,7 @@ export function AssumptionsPanel({
   onRejectProposal,
   annotations,
   highlightedIds,
+  disabled = false,
 }: AssumptionsPanelProps) {
   return (
     <section className="rounded-xl bg-[#f8f7f3] shadow-[0_10px_26px_rgba(23,33,29,0.09)]">
@@ -61,7 +65,8 @@ export function AssumptionsPanel({
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-[#526059] transition hover:bg-[#e9ebe6] hover:text-[#25312b] active:translate-y-px"
+          disabled={disabled}
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-[#526059] transition hover:bg-[#e9ebe6] hover:text-[#25312b] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           <RotateCcw aria-hidden="true" size={14} strokeWidth={2} />
           Reset model
@@ -88,7 +93,8 @@ export function AssumptionsPanel({
                     <span className="min-w-0 flex-1">{label}</span>
                     <input
                       type="number"
-                      className="tabular-nums h-11 w-28 rounded-lg border border-[#cfd3cc] bg-white px-2.5 text-right text-sm font-semibold text-[#17211d] transition hover:border-[#9ca69f] focus:border-[#176f55] sm:h-9 sm:w-32"
+                      disabled={disabled}
+                      className="tabular-nums h-11 w-28 rounded-lg border border-[#cfd3cc] bg-white px-2.5 text-right text-sm font-semibold text-[#17211d] transition hover:border-[#9ca69f] focus:border-[#176f55] disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-32"
                       value={assumptions[key]}
                       onChange={(event) => onChange(key, Number(event.target.value))}
                     />

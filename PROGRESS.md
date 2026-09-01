@@ -440,3 +440,32 @@ Decisions worth remembering (approved plan, to implement next session):
 Gotchas: none (no code written).
 Next: implement the approved Present mode plan above (Gate 2 = commit confirmation after TDD +
 review), then remaining Phase 23 candidates (30-day plan, richer audit view, extra charts/a11y).
+
+## Phase 23 (partial, continued 4) — DONE (2026-09-01)
+Files created/changed: src/presentMode.ts (+.test.ts), src/hooks/usePresentMode.ts,
+src/components/PresentModeBar.tsx, src/components/PresetSwitcher.tsx (+disabled prop),
+src/components/AssumptionsPanel.tsx (+disabled prop), src/App.tsx (wired Present mode), AGENTS.md,
+PROGRESS.md.
+Done Check result: implemented the Present mode plan approved in the prior (planning-only) session
+via `/orch-add-feature`, re-confirmed at Gate 1 before writing code. TDD: wrote presentMode.test.ts
+first (7 assertions covering PRESENT_MODE_STEPS shape and clampStepIndex boundary behavior),
+confirmed red (`Cannot find module './presentMode'`), then implemented presentMode.ts to green.
+119 tests pass (7 new), `tsc -b` and `npm run build` clean, `oxlint` shows one additional
+pre-existing-category `react(set-state-in-effect)` warning in App.tsx (the new view-sync effect,
+same category as the pre-existing selectedScenarioId sync effect) and no new categories. Manual
+Chrome QA via chrome-devtools MCP against the dev server: "Present" button disabled all three preset
+buttons and stepped through all 5 script steps correctly (Decision Room health -> Decision Room
+risks/recommendation -> Scenarios with Cost Control selected -> Decision Room pending decisions ->
+Reports board brief), Prev/Next correctly disabled at the first/last step, Exit restored normal
+state exactly; `counterpart-assumptions` localStorage was byte-identical before and after the
+walkthrough (Present mode never touched the model); console showed zero errors or warnings
+throughout; also re-verified at a 390x844 mobile viewport with no overlay overflow.
+Decisions worth remembering: see AGENTS.md section 18H — in-memory-only present-mode state (no
+localStorage, by design), the pure presentMode.ts/clampStepIndex test-coverage split (mirroring the
+codebase's existing "only pure logic gets tests" convention), the view-only scenario-selection step
+(never calls scenarios.activate), and the new optional `disabled` prop on PresetSwitcher/
+AssumptionsPanel.
+Gotchas: none new.
+Next: Phase 23 remaining P1 candidates (30-day action plan, richer audit/history view, extra
+comparison charts, accessibility refinements — save_scenario/compare_scenarios stay deprioritized),
+one item per session.
